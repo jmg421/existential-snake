@@ -6,7 +6,7 @@ export const SPEED_DECREMENT = 3;
 
 export const stChars = ['🧒','👧','🚲','🧇','📺','💡','🎄','🔦','🏚️','🕷️','👾','🌀','🔴','⬡'];
 export const emojis = ['💀','🗿','😭','🔥','💯','🧠','👁️','🫠','🤡','😈','🕷️','🔴','⬡','👾','🌀','🫨','🤯','🧇','💡','📺','🚲','🎄'];
-export const floatTexts = ['GYATT','SIGMA','RIZZ','SKIBIDI','BUSSIN','GOATED','SLAY','NO CAP','FR FR','OHIO','FANUM TAX','BASED','SHEESH','LOCK IN','AURA +100','BRAINROT','DELULU','ELEVEN/10','FRIENDS DONT LIE','THE UPSIDE DOWN','RUN','VECNA RIZZ','DEMOGORGON ATE','HAWKINS OHIO','MOUTH BREATHER','SHOULD I STAY OR SHOULD I GO','RUNNING UP THAT HILL','MORNINGS ARE FOR COFFEE AND CONTEMPLATION'];
+export const floatTexts = ['GYATT','SIGMA','RIZZ','SKIBIDI','BUSSIN','GOATED','SLAY','NO CAP','FR FR','OHIO','FANUM TAX','BASED','SHEESH','LOCK IN','AURA +100','BRAINROT','DELULU','ELEVEN/10','FRIENDS DONT LIE','THE UPSIDE DOWN','RUN','VECNA RIZZ','DEMOGORGON ATE','HAWKINS OHIO','MOUTH BREATHER','SHOULD I STAY OR SHOULD I GO','RUNNING UP THAT HILL','MORNINGS ARE FOR COFFEE AND CONTEMPLATION','VROOM VROOM','SPEED DEMON','TURBO MODE','GAS GAS GAS','INITIAL D MOMENT','TOKYO DRIFT','NEED FOR SPEED','FAST AND FURIOUS','PEDAL TO THE METAL','ZOOM ZOOM','BUILT DIFFERENT','MAIN CHARACTER','PLOT ARMOR','SIDE QUEST','NPC BEHAVIOR','RESPAWN','CLUTCH','GG EZ','SKILL DIFF','TOUCH GRASS','ITS GIVING','SNATCHED','UNDERSTOOD THE ASSIGNMENT'];
 
 export const stAsciiChars = [
   {name:'ELEVEN',art:'011',color:'#f8a'},
