@@ -1,14 +1,22 @@
 // Web Audio API sound engine
 let audioCtx;
 
-export function beep(freq, dur, type = 'square') {
+function getCtx() {
   if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   if (audioCtx.state === 'suspended') audioCtx.resume();
-  const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  return audioCtx;
+}
+
+// Call this on first user interaction to unlock audio
+export function unlockAudio() { getCtx(); }
+
+export function beep(freq, dur, type = 'square') {
+  const ctx = getCtx();
+  const o = ctx.createOscillator(), g = ctx.createGain();
   o.type = type; o.frequency.value = freq;
-  g.gain.setValueAtTime(0.07, audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
-  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dur);
+  g.gain.setValueAtTime(0.07, ctx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+  o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + dur);
   o.onended = () => { o.disconnect(); g.disconnect(); };
 }
 
@@ -27,3 +35,39 @@ export const sbSounds = [
 
 export function eatSound() { sbSounds[Math.floor(Math.random() * sbSounds.length)].fn(); }
 export function dieSound() { [200,150,100,60].forEach((f,i) => setTimeout(() => beep(f,.4,'sawtooth'), i*120)); }
+
+// Background synth track — Stranger Things inspired
+let bgInterval = null;
+const bgNotes = [
+  // C minor arpeggios, dark and moody
+  [131, 156, 196, 262], // Cm
+  [117, 147, 175, 233], // Bb
+  [104, 131, 156, 208], // Ab
+  [117, 147, 175, 233], // Bb
+];
+let bgBar = 0;
+
+export function startBgTrack() {
+  if (bgInterval) return;
+  bgInterval = setInterval(() => {
+    const ctx = getCtx();
+    const notes = bgNotes[bgBar % bgNotes.length];
+    notes.forEach((freq, i) => {
+      setTimeout(() => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'triangle';
+        o.frequency.value = freq;
+        g.gain.setValueAtTime(0.02, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+        o.connect(g); g.connect(ctx.destination);
+        o.start(); o.stop(ctx.currentTime + 0.8);
+        o.onended = () => { o.disconnect(); g.disconnect(); };
+      }, i * 200);
+    });
+    bgBar++;
+  }, 800);
+}
+
+export function stopBgTrack() {
+  if (bgInterval) { clearInterval(bgInterval); bgInterval = null; }
+}

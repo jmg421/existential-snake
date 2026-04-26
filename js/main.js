@@ -1,6 +1,6 @@
 // Main — game loop, state, wiring
 import { G, SPEED_INITIAL, SPEED_MIN, SPEED_DECREMENT } from './config.js';
-import { eatSound, dieSound, beep } from './audio.js';
+import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack } from './audio.js';
 import { addParticles } from './particles.js';
 import { initInput } from './input.js';
 import { render } from './renderer.js';
@@ -75,6 +75,7 @@ function flipDimension() {
 function die() {
   state.alive = false;
   clearInterval(tick);
+  stopBgTrack();
   dieSound();
   showGameOver(state.score);
   canvas.style.filter = 'hue-rotate(180deg) saturate(3) brightness(0.5)';
@@ -134,6 +135,7 @@ setInterval(() => {
 
 initInput({
   onDirection(d) {
+    unlockAudio();
     if (d.x + state.dir.x === 0 && d.y + state.dir.y === 0) return;
     state.dir = d;
   },
@@ -142,6 +144,7 @@ initInput({
     tick = setInterval(loop, state.speedMs);
     document.getElementById('thought').textContent = 'locked in at hawkins 🔒🔴';
     beep(523, .1); beep(659, .1); showSTCharacter();
+    startBgTrack();
   }
 });
 
