@@ -64,3 +64,19 @@ export function getActiveSkin() {
 export function setActiveSkin(id) {
   localStorage.setItem('skibidi-skin', id);
 }
+
+// NFL trivia — sprinkled into gameplay
+export const nflTrivia = [
+  "joe thomas never missed a snap in 10 seasons. 10,363 consecutive. this snake could never 🏈",
+  "spencer fano really said 'joe thomas never missed a snap' like it was nothing 💀",
+  "the longest NFL game lasted 82 minutes 40 seconds. this round feels longer ngl",
+  "a football field is 360 feet. this grid is 600 pixels. basically the same thing",
+  "peyton manning audibled more than he ran plays. me changing direction every 2 seconds 🗿",
+  "the NFL draft has 7 rounds. the upside down has infinite dimensions. ohio has both",
+  "deion sanders played an NFL game and MLB game on the same day. i cant even eat food without dying",
+  "tom brady won 7 super bowls. i have SCORE aura. we are not the same",
+  "the seahawks once passed on the 1 yard line. i just ran into a wall. we understand each other",
+  "lamar jackson runs a 4.34 forty. this snake runs a 4.34 into the nearest wall 🏃",
+  "the bills lost 4 super bowls in a row. i lost 4 games in a row. bills mafia 🤝 snake mafia",
+  "fun fact: an NFL ball has 132 laces. this game has 0 laces and 0 chill",
+];

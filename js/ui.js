@@ -1,5 +1,5 @@
 // UI — DOM manipulation, popups, lights, soundboard buttons
-import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts, skins, getUnlockedSkins, getActiveSkin, setActiveSkin } from './config.js';
+import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts, nflTrivia, skins, getUnlockedSkins, getActiveSkin, setActiveSkin } from './config.js';
 import { sbSounds } from './audio.js';
 
 // Christmas lights
@@ -66,6 +66,12 @@ export function updateCombo(combo, upsideDown, hue) {
 }
 
 export function think(score) {
+  // 30% chance of NFL trivia
+  if (Math.random() < 0.3) {
+    const trivia = nflTrivia[Math.floor(Math.random() * nflTrivia.length)].replace(/SCORE/g, score);
+    document.getElementById('thought').textContent = trivia;
+    return;
+  }
   const tier = Math.min(Math.floor(score), thoughts.length - 1);
   const pool = thoughts[tier];
   document.getElementById('thought').textContent = pool[Math.floor(Math.random() * pool.length)];
