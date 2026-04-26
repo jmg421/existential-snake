@@ -1,5 +1,6 @@
 // Canvas renderer
 import { G } from './config.js';
+import { getActiveSkin } from './config.js';
 import { drawParticles } from './particles.js';
 
 export function render(ctx, state) {
@@ -43,6 +44,7 @@ export function render(ctx, state) {
   drawParticles(ctx);
 
   // Snake
+  const skin = getActiveSkin();
   snake.forEach((s, i) => {
     let snakeHue = upsideDown ? (i * 3) % 30 : (hue + i * 10) % 360;
     let sat = upsideDown ? 60 : 80 + Math.sin(Date.now() / 300 + i) * 20;
@@ -60,6 +62,14 @@ export function render(ctx, state) {
       ctx.fillStyle = upsideDown ? '#000' : '#fff';
       ctx.beginPath(); ctx.arc(s.x * G + 6 + ex + wb - 1, s.y * G + 7 + ey + wby - 1, eyeSize * .4, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(s.x * G + 14 + ex + wb - 1, s.y * G + 7 + ey + wby - 1, eyeSize * .4, 0, Math.PI * 2); ctx.fill();
+    }
+    // Emoji skin overlay
+    if (skin.head && i === 0) {
+      ctx.shadowBlur = 0; ctx.font = `${G - 4}px sans-serif`; ctx.textAlign = 'center';
+      ctx.fillText(skin.head, s.x * G + G / 2 + wb, s.y * G + G - 3 + wby);
+    } else if (skin.body && i > 0) {
+      ctx.shadowBlur = 0; ctx.font = `${G - 6}px sans-serif`; ctx.textAlign = 'center';
+      ctx.fillText(skin.body, s.x * G + G / 2 + wb, s.y * G + G - 4 + wby);
     }
   });
   ctx.shadowBlur = 0;

@@ -1,5 +1,5 @@
 // UI — DOM manipulation, popups, lights, soundboard buttons
-import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts } from './config.js';
+import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts, skins, getUnlockedSkins, getActiveSkin, setActiveSkin } from './config.js';
 import { sbSounds } from './audio.js';
 
 // Christmas lights
@@ -95,5 +95,27 @@ export function setupSoundboard() {
     btn.addEventListener('click', e => { e.preventDefault(); s.fn(); popEmoji(1); });
     btn.addEventListener('touchstart', e => { e.preventDefault(); s.fn(); popEmoji(1); }, { passive: false });
     sbEl.appendChild(btn);
+  });
+}
+
+export function setupSkinPicker() {
+  const el = document.getElementById('skinpicker');
+  if (!el) return;
+  const unlocked = getUnlockedSkins();
+  const active = getActiveSkin();
+  el.innerHTML = '';
+  skins.forEach(s => {
+    const btn = document.createElement('div');
+    btn.className = 'sb-btn' + (s.id === active.id ? ' skin-active' : '');
+    const isLocked = !unlocked.find(u => u.id === s.id);
+    btn.textContent = isLocked ? `🔒 ${s.name}` : `${s.head || '🐍'} ${s.name}`;
+    btn.title = s.desc;
+    if (isLocked) {
+      btn.style.opacity = '0.4';
+      btn.style.cursor = 'not-allowed';
+    } else {
+      btn.addEventListener('click', () => { setActiveSkin(s.id); setupSkinPicker(); });
+    }
+    el.appendChild(btn);
   });
 }

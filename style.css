@@ -24,6 +24,8 @@ canvas{border:3px solid #c44;z-index:1;max-width:calc(100vw - 20px)}
 #lights{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #watermark{position:fixed;bottom:10px;font-size:11px;color:#311;z-index:2;font-family:'Creepster',cursive;letter-spacing:2px}
 #soundboard{position:fixed;bottom:50px;left:50%;transform:translateX(-50%);display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:500px;z-index:99}
+#skinpicker{position:fixed;top:50px;left:50%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:500px;z-index:99}
+.skin-active{border-color:#f44!important;box-shadow:0 0 10px #f00!important;background:rgba(80,0,0,0.8)!important}
 .sb-btn{background:rgba(40,0,0,0.8);border:1px solid #600;border-radius:8px;padding:6px 10px;font-size:18px;cursor:pointer;color:#f88;font-family:'Comic Neue',cursive;transition:all .1s;user-select:none;-webkit-user-select:none}
 .sb-btn:active{transform:scale(1.2);background:#800;border-color:#f44;box-shadow:0 0 15px #f00}
 .sb-btn:hover{border-color:#f44;text-shadow:0 0 8px #f00}

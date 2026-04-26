@@ -39,3 +39,28 @@ export const lessons = [
 ];
 
 export const goTitles = ["VECNA GOT YOU 🕷️","THE UPSIDE DOWN WINS","💀 DEMOGORGOND 💀","SKILL ISSUE (HAWKINS EDITION)","THE GATE CLOSED ON YOU","MOUTH BREATHER 🗿","BARBD 💀"];
+
+// Snake skins — unlocked by high score milestones
+export const skins = [
+  { name: 'Default', id: 'default', unlock: 0, head: null, body: null, desc: 'just a snake' },
+  { name: 'Eleven', id: 'eleven', unlock: 5, head: '🧒', body: '🔴', desc: 'unlock at 5 aura' },
+  { name: 'Demogorgon', id: 'demogorgon', unlock: 15, head: '🌸', body: '🩸', desc: 'unlock at 15 aura' },
+  { name: 'Vecna', id: 'vecna', unlock: 25, head: '🕷️', body: '⬡', desc: 'unlock at 25 aura' },
+  { name: 'Mind Flayer', id: 'mindflayer', unlock: 40, head: '🌩️', body: '🌀', desc: 'unlock at 40 aura' },
+  { name: 'Skibidi', id: 'skibidi', unlock: 60, head: '🚽', body: '💀', desc: 'unlock at 60 aura' },
+  { name: 'Ohio Final Boss', id: 'ohio', unlock: 100, head: '👑', body: '🔥', desc: 'unlock at 100 aura' },
+];
+
+export function getUnlockedSkins() {
+  const best = parseInt(localStorage.getItem('skibidi-highscore') || '0');
+  return skins.filter(s => best >= s.unlock);
+}
+
+export function getActiveSkin() {
+  const id = localStorage.getItem('skibidi-skin') || 'default';
+  return skins.find(s => s.id === id) || skins[0];
+}
+
+export function setActiveSkin(id) {
+  localStorage.setItem('skibidi-skin', id);
+}

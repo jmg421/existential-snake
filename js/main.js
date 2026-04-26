@@ -4,7 +4,7 @@ import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack } from
 import { addParticles } from './particles.js';
 import { initInput } from './input.js';
 import { render } from './renderer.js';
-import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, updateScore, updateCombo, think, showGameOver, setupSoundboard } from './ui.js';
+import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, updateScore, updateCombo, think, showGameOver, setupSoundboard, setupSkinPicker } from './ui.js';
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -78,6 +78,8 @@ function die() {
   const prev = parseInt(localStorage.getItem('skibidi-highscore') || '0');
   const isNew = state.score > prev;
   if (isNew) localStorage.setItem('skibidi-highscore', state.score);
+  // Refresh skin picker — may have unlocked new skins
+  setupSkinPicker();
   // Near-miss on streak
   if (state.streak >= 7 && state.streak < 10) {
     document.getElementById('thought').textContent = `😱 ${state.streak}/10 STREAK... SO CLOSE TO THE BONUS`;
@@ -152,6 +154,7 @@ function renderFrame() {
 spawn();
 setupLights();
 setupSoundboard();
+setupSkinPicker();
 const savedHigh = localStorage.getItem('skibidi-highscore');
 if (savedHigh && parseInt(savedHigh) > 0) {
   document.getElementById('thought').textContent = `best aura: ${savedHigh} — can you beat it? 🔴`;
