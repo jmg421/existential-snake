@@ -4,7 +4,7 @@ import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, nextT
 import { addParticles } from './particles.js';
 import { initInput } from './input.js';
 import { render } from './renderer.js';
-import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, updateScore, updateCombo, think, showGameOver, setupSoundboard, setupSkinPicker } from './ui.js';
+import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, updateScore, updateCombo, think, showGameOver, setupSoundboard, setupSkinPicker, setupTheme } from './ui.js';
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -156,6 +156,7 @@ spawn();
 setupLights();
 setupSoundboard();
 setupSkinPicker();
+setupTheme();
 const savedHigh = localStorage.getItem('skibidi-highscore');
 if (savedHigh && parseInt(savedHigh) > 0) {
   document.getElementById('thought').textContent = `best aura: ${savedHigh} — can you beat it? 🔴`;

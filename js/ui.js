@@ -1,5 +1,5 @@
 // UI — DOM manipulation, popups, lights, soundboard buttons
-import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts, nflTrivia, skins, getUnlockedSkins, getActiveSkin, setActiveSkin } from './config.js';
+import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts, nflTrivia, skins, getUnlockedSkins, getActiveSkin, setActiveSkin, getTheme, toggleTheme } from './config.js';
 import { sbSounds } from './audio.js';
 
 // Christmas lights
@@ -124,4 +124,14 @@ export function setupSkinPicker() {
     }
     el.appendChild(btn);
   });
+}
+
+export function setupTheme() {
+  const apply = () => {
+    const t = getTheme();
+    document.body.classList.toggle('light', t === 'light');
+    document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+  };
+  apply();
+  document.getElementById('themeToggle').addEventListener('click', () => { toggleTheme(); apply(); });
 }

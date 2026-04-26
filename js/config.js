@@ -80,3 +80,8 @@ export const nflTrivia = [
   "the bills lost 4 super bowls in a row. i lost 4 games in a row. bills mafia 🤝 snake mafia",
   "fun fact: an NFL ball has 132 laces. this game has 0 laces and 0 chill",
 ];
+
+// Theme
+export function getTheme() { return localStorage.getItem('skibidi-theme') || 'dark'; }
+export function setTheme(t) { localStorage.setItem('skibidi-theme', t); }
+export function toggleTheme() { setTheme(getTheme() === 'dark' ? 'light' : 'dark'); }

@@ -38,3 +38,22 @@ canvas{border:3px solid #f0f;z-index:1;max-width:calc(100vw - 20px);box-shadow:0
   .sb-btn{font-size:14px;padding:5px 8px}
   #soundboard{bottom:30px;max-width:95vw}
 }
+
+/* Light mode */
+body.light{background:#f0f0ff}
+body.light canvas{border-color:#60f;box-shadow:0 0 20px rgba(100,0,255,0.2)}
+body.light #title{color:#60f;text-shadow:0 0 10px #a0f}
+body.light #subtitle{color:#80f}
+body.light #thought{color:#309}
+body.light #score{color:#060;text-shadow:none}
+body.light #dimension{color:#60f;text-shadow:none}
+body.light #gameover{background:rgba(240,240,255,0.97);border-color:#60f}
+body.light #gameover h1{color:#60f;text-shadow:0 0 10px #a0f}
+body.light #gameover p{color:#446}
+body.light #gameover span{color:#60f}
+body.light #watermark{color:#aac}
+body.light .sb-btn{background:rgba(240,240,255,0.9);border-color:#a0f;color:#60f}
+body.light .sb-btn:active{background:#d0f;border-color:#60f}
+body.light #combo{text-shadow:0 0 10px #60f}
+body.light .skin-active{border-color:#60f!important;box-shadow:0 0 10px #60f!important;background:rgba(200,200,255,0.8)!important}
+#themeToggle{position:fixed;top:8px;right:8px;z-index:100;cursor:pointer;font-size:22px;background:none;border:none;padding:4px}
