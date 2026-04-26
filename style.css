@@ -24,8 +24,8 @@ canvas{border:3px solid #f0f;z-index:1;max-width:calc(100vw - 20px);box-shadow:0
 #lights{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
 #watermark{position:fixed;bottom:10px;font-size:11px;color:#426;z-index:2;font-family:'Creepster',cursive;letter-spacing:2px}
 #soundboard{position:fixed;bottom:50px;left:50%;transform:translateX(-50%);display:flex;gap:6px;flex-wrap:wrap;justify-content:center;max-width:500px;z-index:99}
-#skinpicker{position:fixed;top:50px;left:50%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:500px;z-index:99}
-#trackpicker{position:fixed;top:85px;left:50%;transform:translateX(-50%);display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:500px;z-index:99}
+#skinpicker,#trackpicker{display:flex;gap:4px;flex-wrap:wrap;justify-content:center;max-width:500px}
+#pickers{position:fixed;top:50px;left:50%;transform:translateX(-50%);z-index:99;display:flex;flex-direction:column;align-items:center;gap:6px;max-width:500px}
 .track-active{border-color:#0f0!important;box-shadow:0 0 10px #0f0!important;background:rgba(0,40,0,0.8)!important}
 .skin-active{border-color:#0ff!important;box-shadow:0 0 10px #0ff!important;background:rgba(0,40,80,0.8)!important}
 .sb-btn{background:rgba(10,0,30,0.8);border:1px solid #60f;border-radius:8px;padding:6px 10px;font-size:18px;cursor:pointer;color:#f8f;font-family:'Comic Neue',cursive;transition:all .1s;user-select:none;-webkit-user-select:none}
@@ -39,7 +39,7 @@ canvas{border:3px solid #f0f;z-index:1;max-width:calc(100vw - 20px);box-shadow:0
   #score{font-size:13px}
   .sb-btn{font-size:14px;padding:5px 8px}
   #soundboard{bottom:180px;max-width:95vw}
-  #skinpicker,#trackpicker{display:none}
+  #pickers{display:none}
   #controls{display:flex}
 }
 #controls{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100}
