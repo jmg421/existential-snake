@@ -57,7 +57,6 @@ function flipDimension() {
     document.getElementById('dimension').textContent = '⬡ THE UPSIDE DOWN ⬡';
     document.getElementById('dimension').style.color = '#f44';
     document.getElementById('vecna').style.opacity = '0.06';
-    document.body.style.background = '#0a0000';
     popEmoji(4); popText(true); showSTCharacter();
   } else {
     beep(523, .15); setTimeout(() => beep(659, .15), 100);
@@ -65,7 +64,6 @@ function flipDimension() {
     document.getElementById('dimension').textContent = 'THE RIGHT-SIDE UP';
     document.getElementById('dimension').style.color = '#c44';
     document.getElementById('vecna').style.opacity = '0';
-    document.body.style.background = '#0a0a0a';
     showSTCharacter();
   }
   updateScore(state.score, state.upsideDown);
@@ -215,7 +213,6 @@ window.restartGame = function() {
   document.getElementById('combo').className = '';
   canvas.style.filter = '';
   canvas.style.transform = '';
-  document.body.style.background = '#0a0000';
   initInput({
     onDirection(d) {
       unlockAudio();
