@@ -113,11 +113,13 @@ setupLights();
 let audioCtx;
 function beep(freq,dur,type='square'){
   if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended')audioCtx.resume();
   const o=audioCtx.createOscillator(),g=audioCtx.createGain();
   o.type=type;o.frequency.value=freq;
   g.gain.setValueAtTime(0.07,audioCtx.currentTime);
   g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
   o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);
+  o.onended=()=>{o.disconnect();g.disconnect();};
 }
 function eatSound(){sbSounds[Math.floor(Math.random()*sbSounds.length)].fn();}
 function dieSound(){[200,150,100,60].forEach((f,i)=>setTimeout(()=>beep(f,.4,'sawtooth'),i*120));}
