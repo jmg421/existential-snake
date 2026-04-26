@@ -34,7 +34,11 @@ export const sbSounds = [
   {emoji:'💨',label:'Burnout',fn:()=>{let f=250;const burn=setInterval(()=>{beep(f+Math.random()*30,.04,'sawtooth',.1);beep(f/2,.04,'square',.06);f-=3;if(f<80)clearInterval(burn)},20)}},
 ];
 
-export function eatSound() { sbSounds[Math.floor(Math.random() * sbSounds.length)].fn(); }
+export function eatSound() {
+  // Mario coin — B5 then E6
+  beep(988, .08, 'square', .12);
+  setTimeout(() => beep(1319, .3, 'square', .1), 80);
+}
 export function dieSound() { [200,150,100,60].forEach((f,i) => setTimeout(() => beep(f,.4,'sawtooth',.15), i*120)); }
 
 // Background tracks — Geometry Dash style
