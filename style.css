@@ -52,6 +52,7 @@ canvas{border:3px solid #f0f;z-index:1;max-width:calc(100vw - 20px);box-shadow:0
 #pauseBtn-top{position:fixed;top:8px;right:40px;z-index:100;width:36px;height:36px;font-size:18px;border:2px solid #60f;border-radius:8px;background:rgba(10,0,30,0.85);color:#f0f;cursor:pointer;display:flex;align-items:center;justify-content:center}
 #pauseOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,0,20,0.85);z-index:99;justify-content:center;align-items:center;font-family:'Creepster',cursive;font-size:48px;color:#f0f;text-shadow:0 0 20px #f0f}
 body.desktop #controls{display:none!important}
+#pauseBtn-top{display:flex!important}
 
 /* Light mode */
 body.light{background:#f0f0ff}
