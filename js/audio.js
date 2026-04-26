@@ -37,7 +37,7 @@ export const sbSounds = [
 export function eatSound() {
   // Mario coin — B5 then E6
   beep(988, .08, 'square', .12);
-  setTimeout(() => beep(1319, .3, 'square', .1), 80);
+  setTimeout(() => beep(1319, .6, 'square', .1), 80);
 }
 export function dieSound() { [200,150,100,60].forEach((f,i) => setTimeout(() => beep(f,.4,'sawtooth',.15), i*120)); }
 
