@@ -47,28 +47,30 @@ export function dieSound() { [200,150,100,60].forEach((f,i) => setTimeout(() => 
 
 // Background tracks — real MP3s (ForeverBound)
 let bgAudio = null;
-let currentTrack = 0;
+let currentTrack = parseInt(localStorage.getItem('skibidi-track') || '0');
 const trackFiles = [
-  'audio/stereo-madness.mp3',
-  'audio/stereo-madness-2.mp3',
-  'audio/cosmic-harmony.mp3',
-  'audio/the-other-side.mp3',
+  { name: '🎵 Stereo Madness 2', src: 'audio/stereo-madness-2.mp3' },
+  { name: '🎵 Stereo Madness', src: 'audio/stereo-madness.mp3' },
+  { name: '🎵 Cosmic Harmony', src: 'audio/cosmic-harmony.mp3' },
+  { name: '🎵 The Other Side', src: 'audio/the-other-side.mp3' },
 ];
 
-// Preload
-const trackPool = trackFiles.map(src => {
-  const a = new Audio(src);
+const trackPool = trackFiles.map(t => {
+  const a = new Audio(t.src);
   a.loop = true;
   a.volume = 0.4;
   return a;
 });
 
+export function getTrackNames() { return trackFiles.map((t, i) => ({ name: t.name, idx: i })); }
+export function getCurrentTrack() { return currentTrack; }
+
 export function startBgTrack(trackIdx) {
   stopBgTrack();
-  if (trackIdx !== undefined) currentTrack = trackIdx;
+  if (trackIdx !== undefined) { currentTrack = trackIdx; localStorage.setItem('skibidi-track', trackIdx); }
   bgAudio = trackPool[currentTrack % trackPool.length];
   bgAudio.currentTime = 0;
-  bgAudio.play().catch(() => {}); // ignore autoplay block
+  bgAudio.play().catch(() => {});
 }
 
 export function stopBgTrack() {
@@ -77,5 +79,6 @@ export function stopBgTrack() {
 
 export function nextTrack() {
   currentTrack = (currentTrack + 1) % trackPool.length;
+  localStorage.setItem('skibidi-track', currentTrack);
   startBgTrack(currentTrack);
 }

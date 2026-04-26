@@ -1,6 +1,6 @@
 // UI — DOM manipulation, popups, lights, soundboard buttons
 import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts, nflTrivia, skins, getUnlockedSkins, getActiveSkin, setActiveSkin, getTheme, toggleTheme } from './config.js';
-import { sbSounds } from './audio.js';
+import { sbSounds, getTrackNames, getCurrentTrack, startBgTrack } from './audio.js';
 
 // Christmas lights
 let lightEls = [];
@@ -134,4 +134,19 @@ export function setupTheme() {
   };
   apply();
   document.getElementById('themeToggle').addEventListener('click', () => { toggleTheme(); apply(); });
+}
+
+export function setupTrackPicker() {
+  const el = document.getElementById('trackpicker');
+  if (!el) return;
+  const tracks = getTrackNames();
+  const active = getCurrentTrack();
+  el.innerHTML = '';
+  tracks.forEach(t => {
+    const btn = document.createElement('div');
+    btn.className = 'sb-btn' + (t.idx === active ? ' track-active' : '');
+    btn.textContent = t.name;
+    btn.addEventListener('click', () => { startBgTrack(t.idx); setupTrackPicker(); });
+    el.appendChild(btn);
+  });
 }
