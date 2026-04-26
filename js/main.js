@@ -1,6 +1,6 @@
 // Main — game loop, state, wiring
 import { G, SPEED_INITIAL, SPEED_MIN, SPEED_DECREMENT } from './config.js';
-import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack } from './audio.js';
+import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, nextTrack } from './audio.js';
 import { addParticles } from './particles.js';
 import { initInput } from './input.js';
 import { render } from './renderer.js';
@@ -50,6 +50,7 @@ function spawn() {
 function flipDimension() {
   state.upsideDown = !state.upsideDown;
   state.screenShake = 15;
+  nextTrack(); // switch bg music on dimension flip
   if (state.upsideDown) {
     beep(80, .5, 'sawtooth'); setTimeout(() => beep(60, .5, 'sawtooth'), 200);
     canvas.style.filter = 'saturate(0.5) brightness(0.7)';
