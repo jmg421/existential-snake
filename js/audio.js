@@ -30,8 +30,45 @@ export const sbSounds = [
   {emoji:'🎮',label:'Skill Issue',fn:()=>{[523,466,415,349,311].forEach((f,i)=>setTimeout(()=>beep(f,.15,'square',.1),i*120))}},
   {emoji:'🤡',label:'Honk',fn:()=>{beep(300,.15,'square',.12);setTimeout(()=>beep(250,.2,'square',.12),100);setTimeout(()=>beep(350,.15,'square',.12),250)}},
   {emoji:'🔴',label:'Upside Down',fn:()=>{for(let i=0;i<12;i++)setTimeout(()=>{beep(40+Math.random()*60,.15,'sawtooth',.1);beep(100+Math.random()*100,.1,'square',.08)},i*80)}},
-  {emoji:'🏎️',label:'V8 Rev',fn:()=>{let f=60;const rev=setInterval(()=>{beep(f,.06,'sawtooth',.12);beep(f*1.01,.06,'sawtooth',.12);beep(f*2,.03,'square',.06);f+=8;if(f>300){clearInterval(rev);for(let i=0;i<6;i++)setTimeout(()=>{beep(300-i*20,.08,'sawtooth',.1);beep(300-i*20+2,.08,'sawtooth',.1)},i*50)}},25)}},
-  {emoji:'💨',label:'Burnout',fn:()=>{let f=250;const burn=setInterval(()=>{beep(f+Math.random()*30,.04,'sawtooth',.1);beep(f/2,.04,'square',.06);f-=3;if(f<80)clearInterval(burn)},20)}},
+  {emoji:'🏎️',label:'V8 Rev',fn:()=>{
+    const ctx=getCtx();
+    // White noise through bandpass = engine rumble
+    const bufSize=ctx.sampleRate*2;
+    const buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++)data[i]=(Math.random()*2-1);
+    const noise=ctx.createBufferSource();noise.buffer=buf;
+    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.Q.value=5;
+    const g=ctx.createGain();g.gain.setValueAtTime(0.15,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1.5);
+    noise.connect(bp);bp.connect(g);g.connect(ctx.destination);
+    // Rev up — sweep the bandpass frequency
+    bp.frequency.setValueAtTime(80,ctx.currentTime);
+    bp.frequency.exponentialRampToValueAtTime(400,ctx.currentTime+0.6);
+    bp.frequency.exponentialRampToValueAtTime(600,ctx.currentTime+0.9);
+    bp.frequency.setTargetAtTime(150,ctx.currentTime+0.9,0.2);
+    // Add harmonics
+    [1,2,3].forEach(h=>{beep(60*h,.8,'sawtooth',.04);setTimeout(()=>beep(120*h,.4,'sawtooth',.03),300);setTimeout(()=>beep(200*h,.3,'sawtooth',.02),600)});
+    noise.start();noise.stop(ctx.currentTime+1.5);
+    noise.onended=()=>{noise.disconnect();bp.disconnect();g.disconnect()};
+  }},
+  {emoji:'💨',label:'Burnout',fn:()=>{
+    const ctx=getCtx();
+    const bufSize=ctx.sampleRate;
+    const buf=ctx.createBuffer(1,bufSize,ctx.sampleRate);
+    const data=buf.getChannelData(0);
+    for(let i=0;i<bufSize;i++)data[i]=(Math.random()*2-1);
+    const noise=ctx.createBufferSource();noise.buffer=buf;
+    const bp=ctx.createBiquadFilter();bp.type='bandpass';bp.Q.value=3;
+    bp.frequency.setValueAtTime(500,ctx.currentTime);
+    bp.frequency.exponentialRampToValueAtTime(100,ctx.currentTime+1);
+    const g=ctx.createGain();g.gain.setValueAtTime(0.12,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+1);
+    noise.connect(bp);bp.connect(g);g.connect(ctx.destination);
+    [200,150,100].forEach((f,i)=>setTimeout(()=>beep(f,.15,'sawtooth',.06),i*150));
+    noise.start();noise.stop(ctx.currentTime+1);
+    noise.onended=()=>{noise.disconnect();bp.disconnect();g.disconnect()};
+  }},
 ];
 
 export function eatSound() {
