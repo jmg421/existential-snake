@@ -31,6 +31,8 @@ export const sbSounds = [
   {emoji:'🎮',label:'Skill Issue',fn:()=>{[523,466,415,349,311].forEach((f,i)=>setTimeout(()=>beep(f,.15,'square'),i*120))}},
   {emoji:'🤡',label:'Honk',fn:()=>{beep(300,.15,'square');setTimeout(()=>beep(250,.2,'square'),100);setTimeout(()=>beep(350,.15,'square'),250)}},
   {emoji:'🔴',label:'Upside Down',fn:()=>{for(let i=0;i<12;i++)setTimeout(()=>{beep(40+Math.random()*60,.15,'sawtooth');beep(100+Math.random()*100,.1,'square')},i*80)}},
+  {emoji:'🏎️',label:'V8 Rev',fn:()=>{let f=60;const rev=setInterval(()=>{beep(f,.06,'sawtooth');beep(f*1.01,.06,'sawtooth');beep(f*2,.03,'square');f+=8;if(f>300){clearInterval(rev);for(let i=0;i<6;i++)setTimeout(()=>{beep(300-i*20,.08,'sawtooth');beep(300-i*20+2,.08,'sawtooth')},i*50)}},25)}},
+  {emoji:'💨',label:'Burnout',fn:()=>{let f=250;const burn=setInterval(()=>{beep(f+Math.random()*30,.04,'sawtooth');beep(f/2,.04,'square');f-=3;if(f<80)clearInterval(burn)},20)}},
 ];
 
 export function eatSound() { sbSounds[Math.floor(Math.random() * sbSounds.length)].fn(); }
