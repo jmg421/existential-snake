@@ -119,7 +119,7 @@ function beep(freq,dur,type='square'){
   g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
   o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+dur);
 }
-function eatSound(){beep(440+combo*80,.15);setTimeout(()=>beep(660+combo*80,.1),50);}
+function eatSound(){sbSounds[Math.floor(Math.random()*sbSounds.length)].fn();}
 function dieSound(){[200,150,100,60].forEach((f,i)=>setTimeout(()=>beep(f,.4,'sawtooth'),i*120));}
 
 // HELPER FUNCTIONS
