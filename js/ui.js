@@ -71,16 +71,19 @@ export function think(score) {
   document.getElementById('thought').textContent = pool[Math.floor(Math.random() * pool.length)];
 }
 
-export function showGameOver(score) {
+export function showGameOver(score, prevHigh, isNewHigh) {
   document.getElementById('gameover').style.display = 'block';
-  document.getElementById('goTitle').textContent = goTitles[Math.floor(Math.random() * goTitles.length)];
-  document.getElementById('lesson').textContent = lessons[Math.floor(Math.random() * lessons.length)].replace(/SCORE/g, score);
+  document.getElementById('goTitle').textContent = isNewHigh ? '🏆 NEW HIGH SCORE 🏆' : goTitles[Math.floor(Math.random() * goTitles.length)];
+  const lesson = lessons[Math.floor(Math.random() * lessons.length)].replace(/SCORE/g, score);
+  const highLine = isNewHigh ? `\n\n🔥 ${score} AURA 🔥\nprevious best: ${prevHigh}` : `\naura: ${score} | best: ${prevHigh}`;
+  document.getElementById('lesson').textContent = lesson + highLine;
   for (let i = 0; i < 20; i++) setTimeout(() => popEmoji(2), i * 70);
   for (let i = 0; i < 8; i++) setTimeout(() => popText(false), i * 150);
   for (let i = 0; i < 4; i++) setTimeout(() => showSTCharacter(), i * 400);
   document.getElementById('vecna').style.opacity = '0.15';
   let f = 0;
   const ff = setInterval(() => { lightEls.forEach(el => { el.style.opacity = Math.random() > .3 ? '0.6' : '0'; }); if (++f > 30) clearInterval(ff); }, 80);
+  if (isNewHigh) { for (let i = 0; i < 30; i++) setTimeout(() => popEmoji(3), i * 50); }
 }
 
 export function setupSoundboard() {

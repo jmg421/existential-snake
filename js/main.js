@@ -74,7 +74,11 @@ function die() {
   clearInterval(tick);
   stopBgTrack();
   dieSound();
-  showGameOver(state.score);
+  // High score
+  const prev = parseInt(localStorage.getItem('skibidi-highscore') || '0');
+  const isNew = state.score > prev;
+  if (isNew) localStorage.setItem('skibidi-highscore', state.score);
+  showGameOver(state.score, prev, isNew);
   canvas.style.filter = 'hue-rotate(180deg) saturate(3) brightness(0.5)';
 }
 
@@ -121,6 +125,10 @@ function renderFrame() {
 spawn();
 setupLights();
 setupSoundboard();
+const savedHigh = localStorage.getItem('skibidi-highscore');
+if (savedHigh && parseInt(savedHigh) > 0) {
+  document.getElementById('thought').textContent = `best aura: ${savedHigh} — can you beat it? 🔴`;
+}
 setInterval(() => flickerLights(state.upsideDown), 200);
 setInterval(() => {
   if (!state.alive || !state.started) return;
