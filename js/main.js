@@ -1,6 +1,6 @@
 // Main — game loop, state, wiring
 import { G, SPEED_INITIAL, SPEED_MIN, SPEED_DECREMENT } from './config.js';
-import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, nextTrack, sbSounds } from './audio.js';
+import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, nextTrack, sbSounds, playEngine } from './audio.js';
 import { addParticles } from './particles.js';
 import { initInput } from './input.js';
 import { render } from './renderer.js';
@@ -142,7 +142,7 @@ function step() {
       state.speedMs = Math.max(SPEED_MIN, state.speedMs - SPEED_DECREMENT);
       clearInterval(tick); tick = setInterval(loop, state.speedMs);
       // Car rev on speed up!
-      sbSounds.find(s => s.label === 'V8 Rev')?.fn();
+      playEngine();
     }
     // Reset streak at 10
     if (state.streak >= 10) state.streak = 0;
