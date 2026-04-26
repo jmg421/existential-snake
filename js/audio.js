@@ -35,9 +35,13 @@ export const sbSounds = [
 ];
 
 export function eatSound() {
-  // Mario coin — B5 then E6
+  // Mario coin — two variants
   beep(988, .08, 'square', .12);
-  setTimeout(() => beep(1319, .6, 'square', .1), 80);
+  if (Math.random() < 0.5) {
+    setTimeout(() => beep(1319, .6, 'square', .1), 80); // B5→E6
+  } else {
+    setTimeout(() => beep(1976, .6, 'square', .1), 80); // B5→B6
+  }
 }
 export function dieSound() { [200,150,100,60].forEach((f,i) => setTimeout(() => beep(f,.4,'sawtooth',.15), i*120)); }
 
