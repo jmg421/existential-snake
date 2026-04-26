@@ -3,7 +3,7 @@ import { G } from './config.js';
 import { drawParticles } from './particles.js';
 
 export function render(ctx, state) {
-  const { snake, food, demogorgonFood, upsideDown, hue, screenShake, score, dir, W, H } = state;
+  const { snake, food, demogorgonFood, mysteryFood, upsideDown, hue, screenShake, score, dir, W, H } = state;
   const cw = ctx.canvas.width, ch = ctx.canvas.height;
 
   let sx = 0, sy = 0;
@@ -66,7 +66,14 @@ export function render(ctx, state) {
 
   // Food
   const pulse = Math.sin(Date.now() / 150) * 5;
-  if (demogorgonFood) {
+  if (mysteryFood) {
+    // Rainbow shimmer mystery food
+    const mh = (Date.now() / 5) % 360;
+    ctx.fillStyle = `hsl(${mh},100%,70%)`; ctx.shadowColor = `hsl(${mh},100%,60%)`; ctx.shadowBlur = 25 + pulse;
+    ctx.beginPath(); ctx.arc(food.x * G + G / 2, food.y * G + G / 2, G / 2 + pulse / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('?', food.x * G + G / 2, food.y * G + G / 2 + 4);
+  } else if (demogorgonFood) {
     ctx.fillStyle = upsideDown ? '#f44' : '#f8f'; ctx.shadowColor = upsideDown ? '#f00' : '#f0f'; ctx.shadowBlur = 20 + pulse;
     for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5 + Date.now() / 500; ctx.beginPath(); ctx.arc(food.x * G + G / 2 + Math.cos(a) * (6 + pulse / 2), food.y * G + G / 2 + Math.sin(a) * (6 + pulse / 2), 4, 0, Math.PI * 2); ctx.fill(); }
     ctx.beginPath(); ctx.arc(food.x * G + G / 2, food.y * G + G / 2, 4, 0, Math.PI * 2); ctx.fill();

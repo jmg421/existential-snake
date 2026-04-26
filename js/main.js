@@ -44,6 +44,7 @@ function spawn() {
     state.food = {x: Math.floor(Math.random() * W), y: Math.floor(Math.random() * H)};
   } while (state.snake.some(s => s.x === state.food.x && s.y === state.food.y));
   state.demogorgonFood = Math.random() < .3 && state.score > 3;
+  state.mysteryFood = Math.random() < .15 && state.score > 1; // 15% chance after first food
 }
 
 function flipDimension() {
@@ -74,10 +75,13 @@ function die() {
   clearInterval(tick);
   stopBgTrack();
   dieSound();
-  // High score
   const prev = parseInt(localStorage.getItem('skibidi-highscore') || '0');
   const isNew = state.score > prev;
   if (isNew) localStorage.setItem('skibidi-highscore', state.score);
+  // Near-miss on streak
+  if (state.streak >= 7 && state.streak < 10) {
+    document.getElementById('thought').textContent = `😱 ${state.streak}/10 STREAK... SO CLOSE TO THE BONUS`;
+  }
   showGameOver(state.score, prev, isNew);
   canvas.style.filter = 'hue-rotate(180deg) saturate(3) brightness(0.5)';
 }
@@ -88,12 +92,33 @@ function step() {
   state.snake.unshift(head);
 
   if (head.x === state.food.x && head.y === state.food.y) {
-    state.score++;
+    // Variable reward — mystery food gives random bonus
+    let points = 1;
+    if (state.mysteryFood) {
+      const rolls = [2, 3, 5, 10, 25];
+      points = rolls[Math.floor(Math.random() * rolls.length)];
+      // Slot machine reveal — brief anticipation
+      const revealEl = document.getElementById('thought');
+      revealEl.textContent = '✨ mystery food... ✨';
+      setTimeout(() => { revealEl.textContent = `🎰 +${points} AURA 🎰`; popEmoji(points > 5 ? 8 : 3); if (points >= 10) popText(state.upsideDown); }, 300);
+    }
+    state.score += points;
+
+    // Streak tracking
+    state.streak = (state.streak || 0) + 1;
+    if (state.streak === 10) {
+      state.score += 50;
+      popEmoji(10); popText(state.upsideDown);
+      document.getElementById('thought').textContent = '🔥 10 STREAK BONUS +50 AURA 🔥';
+    } else if (state.streak === 9) {
+      document.getElementById('thought').textContent = '😱 ONE MORE FOR STREAK BONUS...';
+    }
+
     eatSound();
     state.combo++; state.comboTimer = 3;
     updateCombo(state.combo, state.upsideDown, state.hue);
     updateScore(state.score, state.upsideDown);
-    spawn(); think(state.score);
+    spawn(); if (!state.mysteryFood && state.streak !== 10) think(state.score);
     state.screenShake = 8 + state.combo * 2;
     popEmoji(Math.min(state.combo, 6));
     if (state.combo >= 3) popText(state.upsideDown);
@@ -105,6 +130,8 @@ function step() {
       state.speedMs = Math.max(SPEED_MIN, state.speedMs - SPEED_DECREMENT);
       clearInterval(tick); tick = setInterval(loop, state.speedMs);
     }
+    // Reset streak at 10
+    if (state.streak >= 10) state.streak = 0;
   } else {
     state.snake.pop();
     state.comboTimer -= .12;
@@ -171,6 +198,8 @@ window.restartGame = function() {
   state.speedMs = SPEED_INITIAL;
   state.upsideDown = false;
   state.demogorgonFood = false;
+  state.mysteryFood = false;
+  state.streak = 0;
   spawn();
   document.getElementById('gameover').style.display = 'none';
   document.getElementById('vecna').style.opacity = '0';
