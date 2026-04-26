@@ -6,11 +6,9 @@ import { initInput } from './input.js';
 import { render } from './renderer.js';
 import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, updateScore, updateCombo, think, showGameOver, setupSoundboard } from './ui.js';
 
-// Canvas setup
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
 
-// Responsive canvas
 function resizeCanvas() {
   const maxW = 600, maxH = 400;
   const scale = Math.min(1, (window.innerWidth - 20) / maxW);
@@ -22,7 +20,6 @@ window.addEventListener('resize', resizeCanvas);
 
 const W = canvas.width / G, H = canvas.height / G;
 
-// Game state
 const state = {
   snake: [{x: 15, y: 10}],
   dir: {x: 0, y: 0},
@@ -149,3 +146,46 @@ initInput({
 });
 
 requestAnimationFrame(renderFrame);
+
+// Restart without reloading — keeps AudioContext alive
+window.restartGame = function() {
+  clearInterval(tick);
+  stopBgTrack();
+  state.snake = [{x: 15, y: 10}];
+  state.dir = {x: 0, y: 0};
+  state.score = 0;
+  state.alive = true;
+  state.started = false;
+  state.hue = 0;
+  state.screenShake = 0;
+  state.combo = 0;
+  state.comboTimer = 0;
+  state.speedMs = SPEED_INITIAL;
+  state.upsideDown = false;
+  state.demogorgonFood = false;
+  spawn();
+  document.getElementById('gameover').style.display = 'none';
+  document.getElementById('vecna').style.opacity = '0';
+  document.getElementById('dimension').textContent = 'THE RIGHT-SIDE UP';
+  document.getElementById('dimension').style.color = '#c44';
+  document.getElementById('thought').textContent = 'swipe or arrow key to enter hawkins 🔴';
+  document.getElementById('score').textContent = 'aura: 0 | dimension: right-side up';
+  document.getElementById('combo').className = '';
+  canvas.style.filter = '';
+  canvas.style.transform = '';
+  document.body.style.background = '#0a0000';
+  initInput({
+    onDirection(d) {
+      unlockAudio();
+      if (d.x + state.dir.x === 0 && d.y + state.dir.y === 0) return;
+      state.dir = d;
+    },
+    onStart() {
+      state.started = true;
+      tick = setInterval(loop, state.speedMs);
+      document.getElementById('thought').textContent = 'locked in at hawkins 🔒🔴';
+      beep(523, .1); beep(659, .1); showSTCharacter();
+      startBgTrack();
+    }
+  });
+};
