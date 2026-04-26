@@ -34,13 +34,14 @@ canvas{border:3px solid #f0f;z-index:1;max-width:calc(100vw - 20px);box-shadow:0
 #vecna{position:fixed;pointer-events:none;z-index:0;font-size:200px;opacity:0;transition:opacity 2s;top:50%;left:50%;transform:translate(-50%,-50%)}
 
 @media(max-width:640px){
-  #title{font-size:20px;letter-spacing:4px}
-  #thought{font-size:16px;height:40px}
-  #score{font-size:13px}
-  .sb-btn{font-size:14px;padding:5px 8px}
-  #soundboard{bottom:180px;max-width:95vw}
+  #title{font-size:18px;letter-spacing:4px}
+  #thought{font-size:13px;height:28px}
+  #score{font-size:11px}
+  #soundboard{display:none}
   #pickers{display:none}
   #controls{display:flex}
+  #subtitle{display:none}
+  canvas{max-width:calc(100vw - 10px)}
 }
 #controls{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100}
 .dpad{display:flex;flex-direction:column;align-items:center;gap:4px}
