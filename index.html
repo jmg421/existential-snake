@@ -18,6 +18,18 @@
 <div id="score">aura: 0 | dimension: right-side up</div>
 <canvas id="c" width="600" height="400"></canvas>
 <div id="thought">swipe or arrow key to enter hawkins 🔴</div>
+<div id="controls">
+  <div class="dpad">
+    <button class="dpad-btn dpad-up" data-dir="up">▲</button>
+    <div class="dpad-mid">
+      <button class="dpad-btn dpad-left" data-dir="left">◀</button>
+      <button class="dpad-btn dpad-pause" id="pauseBtn">⏸</button>
+      <button class="dpad-btn dpad-right" data-dir="right">▶</button>
+    </div>
+    <button class="dpad-btn dpad-down" data-dir="down">▼</button>
+  </div>
+</div>
+<div id="shareBtn" class="sb-btn" style="position:fixed;bottom:12px;right:12px;z-index:100">📤 Share</div>
 <div id="combo"></div>
 <div id="dimension">THE RIGHT-SIDE UP</div>
 <div id="gameover"><h1 id="goTitle"></h1><p id="lesson"></p><span onclick="restartGame()">[ run from vecna again ]</span></div>
@@ -26,5 +38,6 @@
 <div id="skinpicker"></div>
 <div id="trackpicker"></div>
 <div id="vecna">🕷️</div>
+<div id="pauseOverlay">⏸ PAUSED</div>
 <script type="module" src="js/main.js"></script>
 </body></html>

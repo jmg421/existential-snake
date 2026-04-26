@@ -38,8 +38,18 @@ canvas{border:3px solid #f0f;z-index:1;max-width:calc(100vw - 20px);box-shadow:0
   #thought{font-size:16px;height:40px}
   #score{font-size:13px}
   .sb-btn{font-size:14px;padding:5px 8px}
-  #soundboard{bottom:30px;max-width:95vw}
+  #soundboard{bottom:180px;max-width:95vw}
+  #skinpicker,#trackpicker{display:none}
+  #controls{display:flex}
 }
+#controls{display:none;position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:100}
+.dpad{display:flex;flex-direction:column;align-items:center;gap:4px}
+.dpad-mid{display:flex;gap:4px;align-items:center}
+.dpad-btn{width:52px;height:52px;font-size:22px;border:2px solid #60f;border-radius:10px;background:rgba(10,0,30,0.85);color:#f0f;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+.dpad-btn:active{background:#60f;color:#fff;box-shadow:0 0 15px #f0f}
+.dpad-pause{font-size:18px;width:44px;height:44px}
+#pauseOverlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(5,0,20,0.85);z-index:99;justify-content:center;align-items:center;font-family:'Creepster',cursive;font-size:48px;color:#f0f;text-shadow:0 0 20px #f0f}
+body.desktop #controls{display:none!important}
 
 /* Light mode */
 body.light{background:#f0f0ff}

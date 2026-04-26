@@ -38,6 +38,15 @@ const state = {
 };
 
 let tick;
+let paused = false;
+
+function togglePause() {
+  if (!state.started || !state.alive) return;
+  paused = !paused;
+  document.getElementById('pauseOverlay').style.display = paused ? 'flex' : 'none';
+  if (paused) { clearInterval(tick); stopBgTrack(); }
+  else { tick = setInterval(loop, state.speedMs); startBgTrack(); }
+}
 
 function spawn() {
   do {
@@ -175,7 +184,8 @@ initInput({
     if (d.x + state.dir.x === 0 && d.y + state.dir.y === 0) return;
     state.dir = d;
   },
-  onStart() {
+  onPause() { togglePause(); },
+    onStart() {
     state.started = true;
     tick = setInterval(loop, state.speedMs);
     document.getElementById('thought').textContent = 'locked in at hawkins 🔒🔴';
@@ -220,6 +230,7 @@ window.restartGame = function() {
       if (d.x + state.dir.x === 0 && d.y + state.dir.y === 0) return;
       state.dir = d;
     },
+    onPause() { togglePause(); },
     onStart() {
       state.started = true;
       tick = setInterval(loop, state.speedMs);
