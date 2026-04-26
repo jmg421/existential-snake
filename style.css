@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Creepster&family=Comic+Neue:wght@700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#0a0000;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Comic Neue','Comic Sans MS',cursive;color:#e0e0e0;flex-direction:column;overflow:hidden}
-canvas{border:2px solid #400;z-index:1;max-width:calc(100vw - 20px)}
+canvas{border:3px solid #c44;z-index:1;max-width:calc(100vw - 20px)}
 #title{font-family:'Creepster',cursive;font-size:28px;color:#c22;letter-spacing:8px;margin-bottom:6px;text-shadow:0 0 15px #f00,0 0 40px #900,0 0 80px #600;z-index:2;text-transform:uppercase}
 #subtitle{font-size:11px;color:#622;letter-spacing:4px;margin-bottom:8px;font-family:'Creepster',cursive}
 #thought{height:50px;max-width:620px;text-align:center;padding:8px;font-size:20px;color:#f44;margin-top:10px;z-index:2;text-shadow:0 0 10px #f00}

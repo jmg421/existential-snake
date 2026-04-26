@@ -77,9 +77,9 @@ export function render(ctx, state) {
   }
   ctx.shadowBlur = 0;
 
-  // Border
-  ctx.strokeStyle = upsideDown ? `rgba(200,0,0,${.5 + Math.sin(Date.now() / 500) * .2})` : `hsl(${hue},80%,45%)`;
-  ctx.lineWidth = upsideDown ? 3 : 2; ctx.strokeRect(0, 0, cw, ch); ctx.lineWidth = 1;
+  // Border — bright and visible
+  ctx.strokeStyle = upsideDown ? `rgba(255,0,0,${.7 + Math.sin(Date.now() / 500) * .2})` : `hsl(${hue},100%,60%)`;
+  ctx.lineWidth = 3; ctx.strokeRect(0, 0, cw, ch); ctx.lineWidth = 1;
 
   // Vignette
   const vg = ctx.createRadialGradient(cw / 2, ch / 2, 80, cw / 2, ch / 2, 350);
