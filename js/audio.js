@@ -45,55 +45,37 @@ export function eatSound() {
 }
 export function dieSound() { [200,150,100,60].forEach((f,i) => setTimeout(() => beep(f,.4,'sawtooth',.15), i*120)); }
 
-// Background tracks — Geometry Dash style
-let bgInterval = null;
-let bgStep = 0;
+// Background tracks — real MP3s (ForeverBound)
+let bgAudio = null;
 let currentTrack = 0;
-
-const tracks = [
-  // Track 0: Pumping electronic — fast bass + arpeggios
-  { bpm: 280, play(step, b) {
-    const bass = [65,65,82,65, 55,55,65,55];
-    const arp = [262,330,392,523, 392,330,262,196];
-    b(bass[step%8], .08, 'sawtooth', .06);
-    if(step%2===0) b(arp[step%8], .06, 'square', .04);
-    if(step%4===0) b(130, .03, 'square', .08); // kick
-    if(step%4===2) b(800, .02, 'square', .05); // hat
-  }},
-  // Track 1: Dark synth wave
-  { bpm: 220, play(step, b) {
-    const bass = [55,55,73,55, 49,49,65,49];
-    const mel = [440,0,523,0, 660,0,523,0];
-    b(bass[step%8], .1, 'sawtooth', .05);
-    if(mel[step%8]) b(mel[step%8], .08, 'triangle', .03);
-    if(step%4===0) b(100, .03, 'square', .07);
-    if(step%2===1) b(1200, .01, 'square', .03);
-  }},
-  // Track 2: Upside down — chaotic
-  { bpm: 300, play(step, b) {
-    b(40+Math.random()*40, .06, 'sawtooth', .05);
-    if(step%3===0) b(200+Math.random()*200, .04, 'square', .04);
-    if(step%4===0) b(80, .05, 'sawtooth', .07);
-    if(step%8===0) b(30, .15, 'sawtooth', .06);
-  }},
+const trackFiles = [
+  'audio/stereo-madness.mp3',
+  'audio/stereo-madness-2.mp3',
+  'audio/cosmic-harmony.mp3',
+  'audio/the-other-side.mp3',
 ];
+
+// Preload
+const trackPool = trackFiles.map(src => {
+  const a = new Audio(src);
+  a.loop = true;
+  a.volume = 0.4;
+  return a;
+});
 
 export function startBgTrack(trackIdx) {
   stopBgTrack();
   if (trackIdx !== undefined) currentTrack = trackIdx;
-  const track = tracks[currentTrack % tracks.length];
-  bgStep = 0;
-  bgInterval = setInterval(() => {
-    track.play(bgStep, beep);
-    bgStep++;
-  }, 60000 / track.bpm);
+  bgAudio = trackPool[currentTrack % trackPool.length];
+  bgAudio.currentTime = 0;
+  bgAudio.play().catch(() => {}); // ignore autoplay block
 }
 
 export function stopBgTrack() {
-  if (bgInterval) { clearInterval(bgInterval); bgInterval = null; }
+  if (bgAudio) { bgAudio.pause(); bgAudio.currentTime = 0; bgAudio = null; }
 }
 
 export function nextTrack() {
-  currentTrack = (currentTrack + 1) % tracks.length;
+  currentTrack = (currentTrack + 1) % trackPool.length;
   startBgTrack(currentTrack);
 }
