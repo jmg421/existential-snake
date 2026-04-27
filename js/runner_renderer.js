@@ -94,12 +94,16 @@ function drawCollectible(ctx, x, y, w, h, subtype, elapsed, hue) {
     ctx.closePath(); ctx.fill();
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
   } else if (subtype === 'heart') {
-    // Bright red heart
-    ctx.shadowColor = '#f44'; ctx.shadowBlur = 20 + pulse;
-    ctx.fillStyle = `rgba(255,50,50,${0.25 + Math.sin(elapsed / 200) * 0.1})`;
+    // Bright green heart — clearly good
+    ctx.shadowColor = '#0f0'; ctx.shadowBlur = 22 + pulse;
+    ctx.fillStyle = `rgba(0,255,100,${0.25 + Math.sin(elapsed / 200) * 0.1})`;
     ctx.beginPath(); ctx.arc(cx, cy + bob, 20 + pulse, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = '#f33';
+    ctx.fillStyle = '#0f0';
     drawHeart(ctx, cx, cy + bob, 14);
+    // Plus sign
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(cx - 2, cy - 5 + bob, 4, 10);
+    ctx.fillRect(cx - 5, cy - 2 + bob, 10, 4);
   }
   ctx.shadowBlur = 0;
 }
@@ -139,7 +143,7 @@ export function renderRunner(ctx, state) {
 
   // Background
   if (upsideDown) {
-    ctx.fillStyle = `rgb(${5 + Math.sin(elapsed / 1000) * 3},0,${15 + Math.sin(elapsed / 1000) * 3})`;
+    ctx.fillStyle = `rgb(${20 + Math.sin(elapsed / 1000) * 3},5,${35 + Math.sin(elapsed / 1000) * 3})`;
   } else {
     ctx.fillStyle = `hsl(${hue}, 5%, ${3 + Math.sin(elapsed / 1000)}%)`;
   }
