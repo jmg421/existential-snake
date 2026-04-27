@@ -173,7 +173,7 @@ export function update(state, dt) {
   }
 
   // Screen shake decay
-  if (state.screenShake > 0) state.screenShake *= 0.9;
+  if (state.screenShake > 0) { state.screenShake *= 0.85; if (state.screenShake < 0.5) state.screenShake = 0; }
 
   // Level complete
   if (state.elapsed >= state.duration) {
