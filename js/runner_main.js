@@ -115,9 +115,9 @@ function wireInput() {
   initInput({
     onDirection(d) {
       unlockAudio();
-      if (d.y === -1) switchLane(state, -1);      // up
-      else if (d.y === 1) switchLane(state, 1);    // down
-      else if (d.x !== 0) jump(state);             // left/right = jump
+      if (d.y === -1) { switchLane(state, -1); beep(440, 0.04, 'sine', 0.08); }
+      else if (d.y === 1) { switchLane(state, 1); beep(330, 0.04, 'sine', 0.08); }
+      else if (d.x !== 0) jump(state);
     },
     onPause() { togglePause(); },
     onStart() {
