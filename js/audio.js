@@ -13,9 +13,6 @@ export function unlockAudio() {
   getCtx();
   if (audioUnlocked) return;
   audioUnlocked = true;
-  // Warm up HTML Audio elements for mobile — must happen in user gesture
-  trackPool.forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
-  engineAudio.play().then(() => { engineAudio.pause(); engineAudio.currentTime = 0; }).catch(() => {});
 }
 
 export function beep(freq, dur, type = 'square', vol = 0.1) {
@@ -88,7 +85,12 @@ export function startBgTrack(trackIdx) {
   if (trackIdx !== undefined) { currentTrack = trackIdx; localStorage.setItem('skibidi-track', trackIdx); }
   bgAudio = trackPool[currentTrack % trackPool.length];
   bgAudio.currentTime = 0;
-  bgAudio.play().catch(() => {});
+  bgAudio.play().catch(() => {
+    // Mobile retry — wait for next user interaction
+    const retry = () => { bgAudio.play().catch(() => {}); document.removeEventListener('touchstart', retry); document.removeEventListener('click', retry); };
+    document.addEventListener('touchstart', retry, { once: true });
+    document.addEventListener('click', retry, { once: true });
+  });
 }
 
 export function stopBgTrack() {
