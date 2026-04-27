@@ -247,7 +247,7 @@ export function renderRunner(ctx, state) {
   // Vignette
   const vg = ctx.createRadialGradient(cw / 2, ch / 2, 80, cw / 2, ch / 2, 350);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
-  vg.addColorStop(1, `rgba(${upsideDown ? '10,0,20' : '0,0,0'},${Math.min(0.5, 0.15 + score / 60)})`);
+  vg.addColorStop(1, `rgba(${upsideDown ? '10,0,20' : '0,0,0'},0.2)`);
   ctx.fillStyle = vg;
   ctx.fillRect(0, 0, cw, ch);
 

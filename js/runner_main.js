@@ -49,7 +49,6 @@ function checkTriggers(s) {
     stopBgTrack();
     popEmoji(10);
     showGameOverUI(s);
-    canvas.style.filter = 'hue-rotate(180deg) saturate(3) brightness(0.5)';
   }
   if (s.lives < prevLives && s.alive) {
     beep(200, 0.15, 'sawtooth', 0.15); setTimeout(() => beep(150, 0.2, 'sawtooth', 0.12), 100);
@@ -63,11 +62,9 @@ function checkTriggers(s) {
   if (s.upsideDown !== prevUpsideDown) {
     if (s.upsideDown) {
       beep(80, 0.5, 'sawtooth'); setTimeout(() => beep(60, 0.5, 'sawtooth'), 200);
-      canvas.style.filter = 'saturate(0.5) brightness(0.7)';
       popEmoji(4); popText(true); showSTCharacter();
     } else {
       beep(523, 0.15); setTimeout(() => beep(659, 0.15), 100);
-      canvas.style.filter = '';
     }
   }
   if (s.score > prevScore) {
