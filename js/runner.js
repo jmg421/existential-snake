@@ -66,15 +66,9 @@ export function update(state, dt) {
   // Speed ramp
   state.scrollSpeed = Math.min(state.level.maxSpeed, state.level.speed + state.elapsed * state.level.speedRamp);
 
-  // Smooth lane transition
-  const targetY = laneY(state.targetLane);
-  const dy = targetY - state.playerY;
-  if (Math.abs(dy) > 2) {
-    state.playerY += dy * 0.25; // ease toward target
-  } else {
-    state.playerY = targetY;
-    state.lane = state.targetLane;
-  }
+  // Lane position — snap to target
+  state.playerY = laneY(state.targetLane);
+  state.lane = state.targetLane;
 
   // Jump arc
   if (state.jumping) {
