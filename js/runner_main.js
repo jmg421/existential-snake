@@ -69,7 +69,6 @@ function checkTriggers(s) {
       beep(523, 0.15); setTimeout(() => beep(659, 0.15), 100);
       canvas.style.filter = '';
     }
-    nextTrack();
   }
   if (s.score > prevScore) {
     eatSound();
