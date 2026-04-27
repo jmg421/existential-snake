@@ -7,7 +7,16 @@ function getCtx() {
   return audioCtx;
 }
 
-export function unlockAudio() { getCtx(); }
+let audioUnlocked = false;
+
+export function unlockAudio() {
+  getCtx();
+  if (audioUnlocked) return;
+  audioUnlocked = true;
+  // Warm up HTML Audio elements for mobile — must happen in user gesture
+  trackPool.forEach(a => { a.play().then(() => { a.pause(); a.currentTime = 0; }).catch(() => {}); });
+  engineAudio.play().then(() => { engineAudio.pause(); engineAudio.currentTime = 0; }).catch(() => {});
+}
 
 export function beep(freq, dur, type = 'square', vol = 0.1) {
   const ctx = getCtx();
