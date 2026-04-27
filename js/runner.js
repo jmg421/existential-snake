@@ -150,9 +150,10 @@ export function update(state, dt) {
             log('DEAD — no lives remaining');
             dieSound();
           } else {
-            // Hit but alive — ouch sound
-            beep(200, 0.15, 'sawtooth', 0.15);
-            setTimeout(() => beep(150, 0.2, 'sawtooth', 0.12), 100);
+            // Hit but alive — loud ouch
+            beep(300, 0.2, 'sawtooth', 0.25);
+            setTimeout(() => beep(200, 0.25, 'sawtooth', 0.2), 80);
+            setTimeout(() => beep(100, 0.3, 'sawtooth', 0.15), 160);
           }
         }
       } else if (obj.type === 'collectible') {
