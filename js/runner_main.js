@@ -34,8 +34,8 @@ function frame(now) {
   lastTime = now;
   if (state.started && state.alive && !state.complete) {
     update(state, dt);
-    checkTriggers(state);
   }
+  if (state.started) checkTriggers(state);
   renderRunner(ctx, state);
 }
 
@@ -43,6 +43,7 @@ function frame(now) {
 let prevAlive = true, prevComplete = false, prevUpsideDown = false, prevScore = 0, prevLives = 3;
 
 function checkTriggers(s) {
+  unlockAudio(); // ensure AudioContext is active
   if (!s.alive && prevAlive) {
     dieSound();
     stopBgTrack();
