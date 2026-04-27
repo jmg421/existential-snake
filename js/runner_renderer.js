@@ -7,8 +7,8 @@ const GROUND_TILE = 40;
 
 // Obstacle/collectible emoji map
 const SPRITES = {
-  demogorgon: '🌸', vine: '🌿', tentacle: '🕷️',
-  eggo: '🧇', light: '💡', walkie: '📻',
+  demogorgon: '👹', vine: '🔴', tentacle: '💀',
+  eggo: '🧇', light: '⭐', walkie: '🛡️',
 };
 
 export function renderRunner(ctx, state) {
@@ -72,19 +72,35 @@ export function renderRunner(ctx, state) {
     if (!obj.active) continue;
     const emoji = SPRITES[obj.subtype] || '❓';
     const pulse = Math.sin(elapsed / 150) * 3;
+    const cx = obj.x + obj.w / 2, cy = obj.y + obj.h / 2;
 
     if (obj.type === 'obstacle') {
-      ctx.shadowColor = upsideDown ? '#a0f' : '#f44';
+      // Red warning background
+      ctx.fillStyle = `rgba(255,0,0,${0.25 + Math.sin(elapsed / 200) * 0.1})`;
+      ctx.beginPath();
+      ctx.roundRect(obj.x - 2, obj.y - 2, obj.w + 4, obj.h + 4, 6);
+      ctx.fill();
+      ctx.strokeStyle = '#f44';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.lineWidth = 1;
+      ctx.shadowColor = '#f44';
       ctx.shadowBlur = 12 + pulse;
     } else {
-      ctx.shadowColor = upsideDown ? '#ff0' : `hsl(${(hue + 120) % 360},100%,60%)`;
-      ctx.shadowBlur = 10 + pulse;
+      // Gold/green collectible glow
+      const col = obj.subtype === 'walkie' ? '0,200,255' : '255,215,0';
+      ctx.fillStyle = `rgba(${col},${0.2 + Math.sin(elapsed / 200) * 0.1})`;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 20 + pulse, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowColor = obj.subtype === 'walkie' ? '#0cf' : '#ffd700';
+      ctx.shadowBlur = 15 + pulse;
     }
 
     ctx.font = '28px sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(emoji, obj.x + obj.w / 2, obj.y + obj.h / 2);
+    ctx.fillText(emoji, cx, cy);
   }
   ctx.shadowBlur = 0;
 
