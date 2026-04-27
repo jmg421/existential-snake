@@ -1,7 +1,7 @@
 // Runner main — wires engine, renderer, input, audio, UI
 // Reuses existing input.js and ui.js — no duplication
 import { createState, update, switchLane, jump, CANVAS_W, CANVAS_H } from './runner.js';
-import { getLevelByIndex } from './level.js';
+import { getLevelByIndex, levels } from './level.js';
 import { renderRunner } from './runner_renderer.js';
 import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, playEngine } from './audio.js';
 import { addParticles } from './particles.js';
@@ -22,6 +22,7 @@ resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 let state = createState(getLevelByIndex(0));
+let currentLevel = 0;
 let lastTime = 0;
 let paused = false;
 
@@ -60,7 +61,11 @@ function checkTriggers(s) {
     const el = document.getElementById('gameover');
     el.style.display = 'block';
     document.getElementById('goTitle').textContent = '⭐'.repeat(stars) + ' LEVEL COMPLETE ' + '⭐'.repeat(stars);
+    const hasNext = currentLevel < levels.length - 1;
     document.getElementById('lesson').textContent = `aura: ${s.score} | ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}`;
+    document.getElementById('gameover').querySelector('span').textContent = hasNext ? '[ next chapter ]' : '[ run from vecna again ]';
+    // Override restart to advance level
+    window.restartGame = hasNext ? () => advanceLevel(s.score, s.lives) : () => fullRestart();
     for (let i = 0; i < 15; i++) setTimeout(() => popEmoji(3), i * 50);
   }
   if (s.upsideDown !== prevUpsideDown) {
@@ -119,19 +124,34 @@ function wireInput() {
 }
 wireInput();
 
-// --- Restart ---
-window.restartGame = function() {
+// --- Restart / Advance ---
+function advanceLevel(carryScore, carryLives) {
   stopBgTrack();
+  currentLevel++;
+  state = createState(getLevelByIndex(currentLevel));
+  state.score = carryScore;
+  state.lives = carryLives;
+  lastTime = 0; paused = false;
+  prevAlive = true; prevComplete = false; prevUpsideDown = false; prevScore = carryScore; prevLives = carryLives;
+  document.getElementById('gameover').style.display = 'none';
+  document.getElementById('thought').textContent = `chapter ${currentLevel + 1}... here we go 🔴`;
+  canvas.style.filter = ''; canvas.style.transform = '';
+  window.restartGame = fullRestart;
+  wireInput();
+}
+
+function fullRestart() {
+  stopBgTrack();
+  currentLevel = 0;
   state = createState(getLevelByIndex(0));
-  lastTime = 0;
-  paused = false;
+  lastTime = 0; paused = false;
   prevAlive = true; prevComplete = false; prevUpsideDown = false; prevScore = 0; prevLives = 3;
   document.getElementById('gameover').style.display = 'none';
   document.getElementById('thought').textContent = 'swipe up/down to switch lanes. tap to jump. 🔴';
-  canvas.style.filter = '';
-  canvas.style.transform = '';
+  canvas.style.filter = ''; canvas.style.transform = '';
   wireInput();
-};
+}
+window.restartGame = fullRestart;
 
 // --- Init (shared UI setup) ---
 setupLights();
