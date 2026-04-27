@@ -6,10 +6,123 @@ import { drawParticles } from './particles.js';
 const GROUND_TILE = 40;
 
 // Obstacle/collectible emoji map
-const SPRITES = {
-  demogorgon: '👹', vine: '🔴', tentacle: '💀',
-  eggo: '🧇', light: '⭐', walkie: '🛡️', heart: '❤️',
-};
+const SPRITES = {}; // using custom draw functions instead
+
+function drawObstacle(ctx, x, y, w, h, subtype, elapsed, upsideDown) {
+  const cx = x + w / 2, cy = y + h / 2;
+  const pulse = Math.sin(elapsed / 150) * 3;
+
+  // Red warning box
+  ctx.fillStyle = `rgba(255,20,20,${0.3 + Math.sin(elapsed / 200) * 0.1})`;
+  ctx.beginPath(); ctx.roundRect(x - 3, y - 3, w + 6, h + 6, 6); ctx.fill();
+  ctx.strokeStyle = '#f33'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+
+  ctx.shadowColor = '#f44'; ctx.shadowBlur = 12 + pulse;
+
+  if (subtype === 'demogorgon') {
+    // Flower-mouth shape
+    ctx.fillStyle = '#e22';
+    for (let p = 0; p < 5; p++) {
+      const a = p * Math.PI * 2 / 5 + elapsed / 400;
+      ctx.beginPath();
+      ctx.arc(cx + Math.cos(a) * 10, cy + Math.sin(a) * 10, 5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#400';
+    ctx.beginPath(); ctx.arc(cx, cy, 6, 0, Math.PI * 2); ctx.fill();
+  } else if (subtype === 'vine') {
+    // Pulsing red orb with tendrils
+    ctx.fillStyle = '#f22';
+    ctx.beginPath(); ctx.arc(cx, cy, 8 + pulse / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#c00'; ctx.lineWidth = 2;
+    for (let i = 0; i < 4; i++) {
+      const a = i * Math.PI / 2 + elapsed / 600;
+      ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.quadraticCurveTo(cx + Math.cos(a) * 18, cy + Math.sin(a) * 18, cx + Math.cos(a + 0.5) * 12, cy + Math.sin(a + 0.5) * 14);
+      ctx.stroke();
+    }
+    ctx.lineWidth = 1;
+  } else {
+    // Skull — tentacle
+    ctx.fillStyle = '#ddd';
+    ctx.beginPath(); ctx.arc(cx, cy - 2, 10, Math.PI, 0); ctx.fill();
+    ctx.fillRect(cx - 10, cy - 2, 20, 8);
+    ctx.fillStyle = '#200';
+    ctx.beginPath(); ctx.arc(cx - 4, cy - 2, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + 4, cy - 2, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillRect(cx - 3, cy + 6, 2, 3); ctx.fillRect(cx + 1, cy + 6, 2, 3);
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawCollectible(ctx, x, y, w, h, subtype, elapsed, hue) {
+  const cx = x + w / 2, cy = y + h / 2;
+  const pulse = Math.sin(elapsed / 150) * 3;
+  const bob = Math.sin(elapsed / 300) * 3;
+
+  if (subtype === 'eggo') {
+    // Bright golden waffle
+    ctx.shadowColor = '#ffd700'; ctx.shadowBlur = 18 + pulse;
+    ctx.fillStyle = `rgba(255,215,0,${0.25 + Math.sin(elapsed / 200) * 0.1})`;
+    ctx.beginPath(); ctx.arc(cx, cy + bob, 20 + pulse, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f4c430';
+    ctx.beginPath(); ctx.roundRect(cx - 10, cy - 8 + bob, 20, 16, 3); ctx.fill();
+    // Grid lines
+    ctx.strokeStyle = '#c89b20'; ctx.lineWidth = 1;
+    for (let i = -6; i <= 6; i += 4) {
+      ctx.beginPath(); ctx.moveTo(cx - 9, cy + i + bob); ctx.lineTo(cx + 9, cy + i + bob); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx + i, cy - 7 + bob); ctx.lineTo(cx + i, cy + 7 + bob); ctx.stroke();
+    }
+  } else if (subtype === 'light') {
+    // Bright star
+    ctx.shadowColor = '#fff'; ctx.shadowBlur = 22 + pulse;
+    ctx.fillStyle = `rgba(255,255,100,${0.3 + Math.sin(elapsed / 200) * 0.1})`;
+    ctx.beginPath(); ctx.arc(cx, cy + bob, 22 + pulse, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ffe44d';
+    drawStar(ctx, cx, cy + bob, 5, 12 + pulse / 2, 5);
+    ctx.fillStyle = '#fff';
+    drawStar(ctx, cx, cy + bob, 5, 5, 2);
+  } else if (subtype === 'walkie') {
+    // Shield — cyan diamond
+    ctx.shadowColor = '#0ff'; ctx.shadowBlur = 20 + pulse;
+    ctx.fillStyle = `rgba(0,200,255,${0.25 + Math.sin(elapsed / 200) * 0.1})`;
+    ctx.beginPath(); ctx.arc(cx, cy + bob, 20 + pulse, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#0cf';
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - 12 + bob); ctx.lineTo(cx + 10, cy + bob);
+    ctx.lineTo(cx, cy + 12 + bob); ctx.lineTo(cx - 10, cy + bob);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke(); ctx.lineWidth = 1;
+  } else if (subtype === 'heart') {
+    // Bright red heart
+    ctx.shadowColor = '#f44'; ctx.shadowBlur = 20 + pulse;
+    ctx.fillStyle = `rgba(255,50,50,${0.25 + Math.sin(elapsed / 200) * 0.1})`;
+    ctx.beginPath(); ctx.arc(cx, cy + bob, 20 + pulse, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f33';
+    drawHeart(ctx, cx, cy + bob, 14);
+  }
+  ctx.shadowBlur = 0;
+}
+
+function drawStar(ctx, cx, cy, points, outer, inner) {
+  ctx.beginPath();
+  for (let i = 0; i < points * 2; i++) {
+    const r = i % 2 === 0 ? outer : inner;
+    const a = (i * Math.PI / points) - Math.PI / 2;
+    if (i === 0) ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+    else ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+  }
+  ctx.closePath(); ctx.fill();
+}
+
+function drawHeart(ctx, cx, cy, size) {
+  const s = size / 14;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + 6 * s);
+  ctx.bezierCurveTo(cx - 12 * s, cy - 4 * s, cx - 7 * s, cy - 12 * s, cx, cy - 5 * s);
+  ctx.bezierCurveTo(cx + 7 * s, cy - 12 * s, cx + 12 * s, cy - 4 * s, cx, cy + 6 * s);
+  ctx.fill();
+}
 
 export function renderRunner(ctx, state) {
   const { upsideDown, hue, screenShake, scrollSpeed, elapsed, objects, playerY, jumping, jumpT, score, combo, shield, alive, complete } = state;
@@ -70,39 +183,12 @@ export function renderRunner(ctx, state) {
   // Objects (obstacles + collectibles)
   for (const obj of objects) {
     if (!obj.active) continue;
-    const emoji = SPRITES[obj.subtype] || '❓';
-    const pulse = Math.sin(elapsed / 150) * 3;
-    const cx = obj.x + obj.w / 2, cy = obj.y + obj.h / 2;
-
     if (obj.type === 'obstacle') {
-      // Red warning background
-      ctx.fillStyle = `rgba(255,0,0,${0.25 + Math.sin(elapsed / 200) * 0.1})`;
-      ctx.beginPath();
-      ctx.roundRect(obj.x - 2, obj.y - 2, obj.w + 4, obj.h + 4, 6);
-      ctx.fill();
-      ctx.strokeStyle = '#f44';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      ctx.lineWidth = 1;
-      ctx.shadowColor = '#f44';
-      ctx.shadowBlur = 12 + pulse;
+      drawObstacle(ctx, obj.x, obj.y, obj.w, obj.h, obj.subtype, elapsed, upsideDown);
     } else {
-      // Gold/green collectible glow
-      const col = obj.subtype === 'walkie' ? '0,200,255' : '255,215,0';
-      ctx.fillStyle = `rgba(${col},${0.2 + Math.sin(elapsed / 200) * 0.1})`;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 20 + pulse, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowColor = obj.subtype === 'walkie' ? '#0cf' : '#ffd700';
-      ctx.shadowBlur = 15 + pulse;
+      drawCollectible(ctx, obj.x, obj.y, obj.w, obj.h, obj.subtype, elapsed, hue);
     }
-
-    ctx.font = '28px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(emoji, cx, cy);
   }
-  ctx.shadowBlur = 0;
 
   // Player
   const jumpOffset = jumping ? -Math.sin(jumpT / 400 * Math.PI) * 50 : 0;
