@@ -12,7 +12,11 @@ export function laneY(lane) {
   return LANE_H * (lane + 1) - PLAYER_H / 2;
 }
 
+const DEBUG = location.search.includes('debug');
+function log(...args) { if (DEBUG) console.log(`[runner ${(performance.now()/1000).toFixed(1)}s]`, ...args); }
+
 export function createState(level) {
+  log('createState', level.name, `speed=${level.speed} duration=${level.duration}ms events=${level.events.length}`);
   return {
     // Player
     lane: 1,
@@ -105,9 +109,11 @@ export function update(state, dt) {
         h: OBJ_H,
         active: true,
       });
+      log(`spawn ${ev.type}:${ev.subtype} lane=${ev.lane} t=${ev.t}`);
     } else if (ev.type === 'dimension_flip') {
       state.upsideDown = !state.upsideDown;
       state.screenShake = 15;
+      log(`dimension flip → ${state.upsideDown ? 'UPSIDE DOWN' : 'RIGHT-SIDE UP'}`);
     }
     state.eventIdx++;
   }
@@ -133,8 +139,8 @@ export function update(state, dt) {
       if (obj.type === 'obstacle') {
         if (state.jumping || state.shield || state.invincible) {
           obj.active = false;
-          if (state.shield) { state.shield = false; }
-          if (state.jumping) { state.score += 2; }
+          if (state.shield) { state.shield = false; log('shield absorbed hit'); }
+          if (state.jumping) { state.score += 2; log('jumped over obstacle +2'); }
           state.screenShake = 8;
         } else {
           obj.active = false;
@@ -142,19 +148,22 @@ export function update(state, dt) {
           state.invincible = true;
           state.invincibleTimer = 2000;
           state.screenShake = 15;
+          log(`HIT by ${obj.subtype} lane=${obj.lane} lives=${state.lives}`);
           if (state.lives <= 0) {
             state.alive = false;
             state.screenShake = 20;
+            log('DEAD — no lives remaining');
           }
         }
       } else if (obj.type === 'collectible') {
         obj.active = false;
         if (obj.subtype === 'heart') {
-          if (state.lives < state.maxLives) state.lives++;
+          if (state.lives < state.maxLives) { state.lives++; log(`heart pickup lives=${state.lives}`); }
         } else {
           const pts = obj.subtype === 'eggo' ? 1 : obj.subtype === 'light' ? 3 : 0;
           state.score += pts;
-          if (obj.subtype === 'walkie') { state.shield = true; state.shieldTimer = 5000; }
+          log(`collect ${obj.subtype} +${pts} score=${state.score}`);
+          if (obj.subtype === 'walkie') { state.shield = true; state.shieldTimer = 5000; log('shield activated 5s'); }
         }
         state.combo++;
         state.comboTimer = 2000;
@@ -175,17 +184,17 @@ export function update(state, dt) {
   // Level complete
   if (state.elapsed >= state.duration) {
     state.complete = true;
+    log(`LEVEL COMPLETE score=${state.score} lives=${state.lives}`);
   }
 }
 
 export function switchLane(state, dir) {
-  // dir: -1 (up) or +1 (down)
   const next = state.targetLane + dir;
-  if (next >= 0 && next < LANE_COUNT) state.targetLane = next;
+  if (next >= 0 && next < LANE_COUNT) { state.targetLane = next; log(`switchLane → ${next}`); }
 }
 
 export function jump(state) {
-  if (!state.jumping) { state.jumping = true; state.jumpT = 0; }
+  if (!state.jumping) { state.jumping = true; state.jumpT = 0; log('jump'); }
 }
 
 export { CANVAS_W, CANVAS_H, LANE_H, PLAYER_X, PLAYER_W, PLAYER_H, OBJ_W, OBJ_H };
