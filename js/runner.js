@@ -24,6 +24,10 @@ export function createState(level) {
     shieldTimer: 0,
     alive: true,
     started: false,
+    lives: 3,
+    maxLives: 5,
+    invincible: false,
+    invincibleTimer: 0,
 
     // World
     scrollSpeed: level.speed,
@@ -74,6 +78,12 @@ export function update(state, dt) {
     if (state.jumpT > 400) { state.jumping = false; state.jumpT = 0; }
   }
 
+  // Invincibility timer
+  if (state.invincible) {
+    state.invincibleTimer -= dt;
+    if (state.invincibleTimer <= 0) state.invincible = false;
+  }
+
   // Shield timer
   if (state.shield) {
     state.shieldTimer -= dt;
@@ -121,20 +131,31 @@ export function update(state, dt) {
     if (px < obj.x + obj.w && px + PLAYER_W > obj.x &&
         py < obj.y + obj.h && py + PLAYER_H > obj.y) {
       if (obj.type === 'obstacle') {
-        if (state.jumping || state.shield) {
+        if (state.jumping || state.shield || state.invincible) {
           obj.active = false;
           if (state.shield) { state.shield = false; }
-          state.score += 2;
+          if (state.jumping) { state.score += 2; }
           state.screenShake = 8;
         } else {
-          state.alive = false;
-          state.screenShake = 20;
+          obj.active = false;
+          state.lives--;
+          state.invincible = true;
+          state.invincibleTimer = 2000;
+          state.screenShake = 15;
+          if (state.lives <= 0) {
+            state.alive = false;
+            state.screenShake = 20;
+          }
         }
       } else if (obj.type === 'collectible') {
         obj.active = false;
-        const pts = obj.subtype === 'eggo' ? 1 : obj.subtype === 'light' ? 3 : 0;
-        state.score += pts;
-        if (obj.subtype === 'walkie') { state.shield = true; state.shieldTimer = 5000; }
+        if (obj.subtype === 'heart') {
+          if (state.lives < state.maxLives) state.lives++;
+        } else {
+          const pts = obj.subtype === 'eggo' ? 1 : obj.subtype === 'light' ? 3 : 0;
+          state.score += pts;
+          if (obj.subtype === 'walkie') { state.shield = true; state.shieldTimer = 5000; }
+        }
         state.combo++;
         state.comboTimer = 2000;
         state.screenShake = 6 + state.combo;

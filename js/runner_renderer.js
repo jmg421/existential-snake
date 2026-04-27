@@ -8,7 +8,7 @@ const GROUND_TILE = 40;
 // Obstacle/collectible emoji map
 const SPRITES = {
   demogorgon: '👹', vine: '🔴', tentacle: '💀',
-  eggo: '🧇', light: '⭐', walkie: '🛡️',
+  eggo: '🧇', light: '⭐', walkie: '🛡️', heart: '❤️',
 };
 
 export function renderRunner(ctx, state) {
@@ -108,35 +108,40 @@ export function renderRunner(ctx, state) {
   const jumpOffset = jumping ? -Math.sin(jumpT / 400 * Math.PI) * 50 : 0;
   const px = PLAYER_X, py = playerY + jumpOffset;
 
-  // Player glow
-  const playerHue = upsideDown ? 280 : (hue + 60) % 360;
-  ctx.shadowColor = `hsl(${playerHue},100%,60%)`;
-  ctx.shadowBlur = shield ? 25 : 15;
+  // Skip drawing player every other frame when invincible (flash effect)
+  const showPlayer = !state.invincible || Math.floor(elapsed / 80) % 2 === 0;
 
-  // Player body
-  ctx.fillStyle = `hsl(${playerHue},80%,${upsideDown ? 60 : 70}%)`;
-  ctx.beginPath();
-  ctx.roundRect(px, py, PLAYER_W, PLAYER_H, 8);
-  ctx.fill();
+  if (showPlayer) {
+    // Player glow
+    const playerHue = upsideDown ? 280 : (hue + 60) % 360;
+    ctx.shadowColor = `hsl(${playerHue},100%,60%)`;
+    ctx.shadowBlur = shield ? 25 : 15;
 
-  // Player face
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = '#000';
-  ctx.beginPath(); ctx.arc(px + 12, py + 14, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(px + 24, py + 14, 4, 0, Math.PI * 2); ctx.fill();
-  // Mouth
-  ctx.beginPath();
-  ctx.arc(px + 18, py + 24, 6, 0, Math.PI);
-  ctx.stroke();
-
-  // Shield indicator
-  if (shield) {
-    ctx.strokeStyle = `hsla(180,100%,70%,${0.5 + Math.sin(elapsed / 100) * 0.3})`;
-    ctx.lineWidth = 3;
+    // Player body
+    ctx.fillStyle = `hsl(${playerHue},80%,${upsideDown ? 60 : 70}%)`;
     ctx.beginPath();
-    ctx.arc(px + PLAYER_W / 2, py + PLAYER_H / 2, PLAYER_W * 0.7, 0, Math.PI * 2);
+    ctx.roundRect(px, py, PLAYER_W, PLAYER_H, 8);
+    ctx.fill();
+
+    // Player face
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#000';
+    ctx.beginPath(); ctx.arc(px + 12, py + 14, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(px + 24, py + 14, 4, 0, Math.PI * 2); ctx.fill();
+    // Mouth
+    ctx.beginPath();
+    ctx.arc(px + 18, py + 24, 6, 0, Math.PI);
     ctx.stroke();
-    ctx.lineWidth = 1;
+
+    // Shield indicator
+    if (shield) {
+      ctx.strokeStyle = `hsla(180,100%,70%,${0.5 + Math.sin(elapsed / 100) * 0.3})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(px + PLAYER_W / 2, py + PLAYER_H / 2, PLAYER_W * 0.7, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.lineWidth = 1;
+    }
   }
 
   // Jump shadow on ground
@@ -167,9 +172,10 @@ export function renderRunner(ctx, state) {
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   ctx.fillText(`AURA: ${score}`, 10, 10);
+  ctx.fillText(`${'❤️'.repeat(state.lives)}${'🖤'.repeat(state.maxLives - state.lives)}`, 10, 50);
   if (combo > 1) {
     ctx.fillStyle = `hsl(${(hue + combo * 30) % 360},100%,70%)`;
-    ctx.fillText(`${combo}x COMBO`, 10, 30);
+    ctx.fillText(`${combo}x COMBO`, 10, 70);
   }
 
   // Progress bar

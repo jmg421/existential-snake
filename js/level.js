@@ -36,7 +36,7 @@ function generateLevel1() {
     // Collectible between obstacles
     if (Math.random() < 0.5) {
       const cLane = Math.floor(Math.random() * LANE_COUNT);
-      const csub = Math.random() < 0.6 ? 'eggo' : Math.random() < 0.7 ? 'light' : 'walkie';
+      const csub = Math.random() < 0.5 ? 'eggo' : Math.random() < 0.6 ? 'light' : Math.random() < 0.7 ? 'walkie' : 'heart';
       events.push({ t: t + 400, type: 'collectible', lane: cLane, subtype: csub });
     }
 

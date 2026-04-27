@@ -41,7 +41,7 @@ function frame(now) {
 }
 
 // --- State change triggers ---
-let prevAlive = true, prevComplete = false, prevUpsideDown = false, prevScore = 0;
+let prevAlive = true, prevComplete = false, prevUpsideDown = false, prevScore = 0, prevLives = 3;
 
 function checkTriggers(s) {
   if (!s.alive && prevAlive) {
@@ -50,6 +50,10 @@ function checkTriggers(s) {
     popEmoji(10);
     showGameOverUI(s);
     canvas.style.filter = 'hue-rotate(180deg) saturate(3) brightness(0.5)';
+  }
+  if (s.lives < prevLives && s.alive) {
+    beep(200, 0.15, 'sawtooth', 0.15); setTimeout(() => beep(150, 0.2, 'sawtooth', 0.12), 100);
+    popEmoji(2);
   }
   if (s.complete && !prevComplete) {
     stopBgTrack();
@@ -80,6 +84,7 @@ function checkTriggers(s) {
   prevComplete = s.complete;
   prevUpsideDown = s.upsideDown;
   prevScore = s.score;
+  prevLives = s.lives;
 }
 
 // --- UI overlays ---
@@ -170,7 +175,7 @@ window.restartGame = function() {
   state = createState(getLevelByIndex(0));
   lastTime = 0;
   paused = false;
-  prevAlive = true; prevComplete = false; prevUpsideDown = false; prevScore = 0;
+  prevAlive = true; prevComplete = false; prevUpsideDown = false; prevScore = 0; prevLives = 3;
   document.getElementById('gameover').style.display = 'none';
   document.getElementById('thought').textContent = 'swipe up/down to switch lanes. tap to jump. 🔴';
   canvas.style.filter = '';
