@@ -35,7 +35,7 @@ export const levels = [
 
 function generateLevel(chapter) {
   const events = [];
-  const duration = levels ? 55000 : chapter === 1 ? 43000 : chapter === 2 ? 48000 : 58000;
+  const duration = chapter === 1 ? 43000 : chapter === 2 ? 48000 : 58000;
   let t = 3000; // 3s warmup
 
   // Chapter-specific settings
