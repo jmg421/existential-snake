@@ -1,6 +1,6 @@
 // Runner main — wires engine, renderer, input, audio, UI
 // Reuses existing input.js and ui.js — no duplication
-import { createState, update, switchLane, jump, CANVAS_W, CANVAS_H } from './runner.js';
+import { createState, update, switchLane, jump, setEventHandler, CANVAS_W, CANVAS_H } from './runner.js';
 import { getLevelByIndex, levels } from './level.js';
 import { renderRunner } from './runner_renderer.js';
 import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, playEngine } from './audio.js';
@@ -26,6 +26,40 @@ let currentLevel = 0;
 let lastTime = 0;
 let paused = false;
 
+// --- Sound events from engine ---
+setEventHandler((type, data) => {
+  switch (type) {
+    case 'hit':
+      beep(300, 0.2, 'sawtooth', 0.25);
+      setTimeout(() => beep(200, 0.25, 'sawtooth', 0.2), 80);
+      setTimeout(() => beep(100, 0.3, 'sawtooth', 0.15), 160);
+      popEmoji(2);
+      break;
+    case 'death':
+      dieSound(); stopBgTrack(); popEmoji(10);
+      break;
+    case 'collect':
+      eatSound();
+      if (data === 'heart') { beep(523, 0.1, 'sine', 0.12); setTimeout(() => beep(784, 0.15, 'sine', 0.12), 80); }
+      addParticles(5, Math.floor(state.playerY / 20), 10, state.upsideDown);
+      popEmoji(Math.min(state.combo, 4));
+      if (state.combo >= 3) popText(state.upsideDown);
+      if (state.score % 5 === 0) showSTCharacter();
+      if (state.score % 10 === 0) playEngine();
+      break;
+    case 'shield':
+      beep(300, 0.1, 'triangle', 0.12);
+      break;
+    case 'dodge':
+      beep(500, 0.1, 'square', 0.1);
+      break;
+    case 'dimension_flip':
+      if (data) { beep(80, 0.5, 'sawtooth'); setTimeout(() => beep(60, 0.5, 'sawtooth'), 200); popEmoji(4); popText(true); showSTCharacter(); }
+      else { beep(523, 0.15); setTimeout(() => beep(659, 0.15), 100); }
+      break;
+  }
+});
+
 // --- Game loop ---
 function frame(now) {
   requestAnimationFrame(frame);
@@ -40,14 +74,10 @@ function frame(now) {
 }
 
 // --- State change triggers ---
-let prevAlive = true, prevComplete = false, prevUpsideDown = false, prevScore = 0, prevLives = 3;
+let prevAlive = true, prevComplete = false;
 
 function checkTriggers(s) {
-  unlockAudio(); // ensure AudioContext is active
   if (!s.alive && prevAlive) {
-    dieSound();
-    stopBgTrack();
-    popEmoji(10);
     const prev = parseInt(localStorage.getItem('runner-highscore') || '0');
     const isNew = s.score > prev;
     if (isNew) localStorage.setItem('runner-highscore', s.score);
@@ -61,7 +91,6 @@ function checkTriggers(s) {
     if (s.score > prev) localStorage.setItem('runner-highscore', s.score);
     const el = document.getElementById('gameover');
     el.style.display = 'block';
-    document.getElementById('goTitle').textContent = '⭐'.repeat(stars) + ' LEVEL COMPLETE ' + '⭐'.repeat(stars);
     const hasNext = currentLevel < levels.length - 1;
     document.getElementById('lesson').textContent = hasNext
       ? `aura: ${s.score} | ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}`
@@ -70,35 +99,11 @@ function checkTriggers(s) {
       ? '⭐'.repeat(stars) + ' LEVEL COMPLETE ' + '⭐'.repeat(stars)
       : '🏆 YOU BEAT SKIBIDI THINGS 🏆';
     document.getElementById('gameover').querySelector('span').textContent = hasNext ? '[ next chapter ]' : '[ run it back ]';
-    // Override restart to advance level
     window.restartGame = hasNext ? () => advanceLevel(s.score, s.lives) : () => fullRestart();
     for (let i = 0; i < 15; i++) setTimeout(() => popEmoji(3), i * 50);
   }
-  if (s.upsideDown !== prevUpsideDown) {
-    if (s.upsideDown) {
-      beep(80, 0.5, 'sawtooth'); setTimeout(() => beep(60, 0.5, 'sawtooth'), 200);
-      popEmoji(4); popText(true); showSTCharacter();
-    } else {
-      beep(523, 0.15); setTimeout(() => beep(659, 0.15), 100);
-    }
-  }
-  if (s.lives < prevLives && s.alive) {
-    beep(200, 0.15, 'sawtooth', 0.15); setTimeout(() => beep(150, 0.2, 'sawtooth', 0.12), 100);
-    popEmoji(2);
-  }
-  if (s.score > prevScore) {
-    eatSound();
-    addParticles(5, Math.floor(s.playerY / 20), 10 + s.combo * 3, s.upsideDown);
-    popEmoji(Math.min(s.combo, 4));
-    if (s.combo >= 3) popText(s.upsideDown);
-    if (s.score % 5 === 0) showSTCharacter();
-    if (s.score % 10 === 0) playEngine();
-  }
   prevAlive = s.alive;
   prevComplete = s.complete;
-  prevUpsideDown = s.upsideDown;
-  prevScore = s.score;
-  prevLives = s.lives;
 }
 
 // --- Pause ---
@@ -138,7 +143,7 @@ function advanceLevel(carryScore, carryLives) {
   state.score = carryScore;
   state.lives = carryLives;
   lastTime = 0; paused = false;
-  prevAlive = true; prevComplete = false; prevUpsideDown = false; prevScore = carryScore; prevLives = carryLives;
+  prevAlive = true; prevComplete = false;
   document.getElementById('gameover').style.display = 'none';
   document.getElementById('thought').textContent = `chapter ${currentLevel + 1}... here we go 🔴`;
   canvas.style.filter = ''; canvas.style.transform = '';
@@ -151,7 +156,7 @@ function fullRestart() {
   currentLevel = 0;
   state = createState(getLevelByIndex(0));
   lastTime = 0; paused = false;
-  prevAlive = true; prevComplete = false; prevUpsideDown = false; prevScore = 0; prevLives = 3;
+  prevAlive = true; prevComplete = false;
   document.getElementById('gameover').style.display = 'none';
   document.getElementById('thought').textContent = 'swipe up/down to switch lanes. tap to jump. 🔴';
   canvas.style.filter = ''; canvas.style.transform = '';
