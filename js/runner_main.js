@@ -62,8 +62,13 @@ function checkTriggers(s) {
     el.style.display = 'block';
     document.getElementById('goTitle').textContent = '⭐'.repeat(stars) + ' LEVEL COMPLETE ' + '⭐'.repeat(stars);
     const hasNext = currentLevel < levels.length - 1;
-    document.getElementById('lesson').textContent = `aura: ${s.score} | ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}`;
-    document.getElementById('gameover').querySelector('span').textContent = hasNext ? '[ next chapter ]' : '[ run from vecna again ]';
+    document.getElementById('lesson').textContent = hasNext
+      ? `aura: ${s.score} | ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}`
+      : `FINAL AURA: ${s.score} | ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}\n\nyou survived all of hawkins.\nthe upside down fears you now.`;
+    document.getElementById('goTitle').textContent = hasNext
+      ? '⭐'.repeat(stars) + ' LEVEL COMPLETE ' + '⭐'.repeat(stars)
+      : '🏆 YOU BEAT SKIBIDI THINGS 🏆';
+    document.getElementById('gameover').querySelector('span').textContent = hasNext ? '[ next chapter ]' : '[ run it back ]';
     // Override restart to advance level
     window.restartGame = hasNext ? () => advanceLevel(s.score, s.lives) : () => fullRestart();
     for (let i = 0; i < 15; i++) setTimeout(() => popEmoji(3), i * 50);
