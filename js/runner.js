@@ -1,5 +1,6 @@
 // Runner engine — game state, loop, collision, lane switching
 import { LANE_COUNT } from './level.js';
+import { beep, eatSound, dieSound } from './audio.js';
 
 const CANVAS_W = 600, CANVAS_H = 400;
 const LANE_H = CANVAS_H / (LANE_COUNT + 1); // divide canvas into sections
@@ -133,8 +134,8 @@ export function update(state, dt) {
       if (obj.type === 'obstacle') {
         if (state.jumping || state.shield || state.invincible) {
           obj.active = false;
-          if (state.shield) { state.shield = false; log('shield absorbed hit'); }
-          if (state.jumping) { state.score += 2; log('jumped over obstacle +2'); }
+          if (state.shield) { state.shield = false; log('shield absorbed hit'); beep(300, 0.1, 'triangle', 0.12); }
+          if (state.jumping) { state.score += 2; log('jumped over obstacle +2'); beep(500, 0.1, 'square', 0.1); }
           state.screenShake = 8;
         } else {
           obj.active = false;
@@ -147,12 +148,19 @@ export function update(state, dt) {
             state.alive = false;
             state.screenShake = 20;
             log('DEAD — no lives remaining');
+            dieSound();
+          } else {
+            // Hit but alive — ouch sound
+            beep(200, 0.15, 'sawtooth', 0.15);
+            setTimeout(() => beep(150, 0.2, 'sawtooth', 0.12), 100);
           }
         }
       } else if (obj.type === 'collectible') {
         obj.active = false;
+        eatSound();
         if (obj.subtype === 'heart') {
           if (state.lives < state.maxLives) { state.lives++; log(`heart pickup lives=${state.lives}`); }
+          beep(523, 0.1, 'sine', 0.12); setTimeout(() => beep(784, 0.15, 'sine', 0.12), 80);
         } else {
           const pts = obj.subtype === 'eggo' ? 1 : obj.subtype === 'light' ? 3 : 0;
           state.score += pts;
