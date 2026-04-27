@@ -69,8 +69,8 @@ export function update(state, dt) {
   // Smooth lane transition
   const targetY = laneY(state.targetLane);
   const dy = targetY - state.playerY;
-  if (Math.abs(dy) > 1) {
-    state.playerY += Math.sign(dy) * LANE_SWITCH_SPEED;
+  if (Math.abs(dy) > 2) {
+    state.playerY += dy * 0.25; // ease toward target
   } else {
     state.playerY = targetY;
     state.lane = state.targetLane;
