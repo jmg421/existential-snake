@@ -33,12 +33,16 @@ function generateLevel(chapter) {
     const lane = Math.floor(Math.random() * LANE_COUNT);
     events.push({ t, type: 'obstacle', lane, subtype: obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)] });
 
-    if (Math.random() < doubleChance) {
-      const lane2 = (lane + 1 + Math.floor(Math.random() * 2)) % LANE_COUNT;
-      events.push({ t: t + 150, type: 'obstacle', lane: lane2, subtype: obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)] });
-    }
+    let usedLanes = [lane];
 
-    if (Math.random() < tripleChance) {
+    if (Math.random() < doubleChance) {
+      // Pick a lane that's NOT the first obstacle's lane
+      const available = [0, 1, 2].filter(l => l !== lane);
+      const lane2 = available[Math.floor(Math.random() * available.length)];
+      events.push({ t: t + 150, type: 'obstacle', lane: lane2, subtype: obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)] });
+      usedLanes.push(lane2);
+    } else if (Math.random() < tripleChance) {
+      // Only if we didn't already double — block 2 lanes, leave 1 safe
       const safe = Math.floor(Math.random() * LANE_COUNT);
       for (let i = 0; i < LANE_COUNT; i++) {
         if (i !== safe) events.push({ t: t + 100, type: 'obstacle', lane: i, subtype: 'tentacle' });
