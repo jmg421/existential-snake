@@ -144,6 +144,8 @@ function checkTriggers(s) {
     window.restartGame = hasNext ? () => advanceLevel(s.score, s.lives) : () => fullRestart();
     if (!hasNext) { setChaptersBeaten(levels.length); setupRunnerSkinPicker(); }
     for (let i = 0; i < 15; i++) setTimeout(() => popEmoji(3), i * 50);
+    const cardTitle = hasNext ? 'LEVEL COMPLETE' : 'YOU BEAT SKIBIDI THINGS';
+    showSaveButton(generateVictoryCard(s, cardTitle));
   }
   prevAlive = s.alive;
   prevComplete = s.complete;
@@ -182,6 +184,7 @@ wireInput();
 // --- Restart / Advance ---
 function advanceLevel(carryScore, carryLives) {
   stopBgTrack();
+  const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
   currentLevel++;
   setChaptersBeaten(currentLevel);
   setupRunnerSkinPicker();
@@ -200,6 +203,7 @@ function advanceLevel(carryScore, carryLives) {
 
 function fullRestart() {
   stopBgTrack();
+  const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
   currentLevel = 0;
   state = createState(getLevelByIndex(0));
   state.skinHue = getActiveSkinHue();
@@ -214,6 +218,7 @@ function fullRestart() {
 
 function restartCurrentLevel() {
   stopBgTrack();
+  const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
   state = createState(getLevelByIndex(currentLevel));
   state.skinHue = getActiveSkinHue();
   lastTime = 0; paused = false;
@@ -225,6 +230,64 @@ function restartCurrentLevel() {
 }
 
 window.restartGame = restartCurrentLevel;
+
+// --- Victory Card ---
+function generateVictoryCard(s, title) {
+  const c = document.createElement('canvas');
+  c.width = 600; c.height = 340;
+  const ctx = c.getContext('2d');
+  const bg = s.level.bg || [10, 8, 20];
+  // Background
+  ctx.fillStyle = `rgb(${bg[0] + 10},${bg[1] + 5},${bg[2] + 15})`;
+  ctx.fillRect(0, 0, 600, 340);
+  // Border
+  ctx.strokeStyle = '#c44'; ctx.lineWidth = 4;
+  ctx.strokeRect(4, 4, 592, 332);
+  // Title
+  ctx.fillStyle = '#f4a'; ctx.font = 'bold 28px monospace'; ctx.textAlign = 'center';
+  ctx.fillText(title, 300, 50);
+  // Chapter
+  ctx.fillStyle = '#888'; ctx.font = '16px monospace';
+  ctx.fillText(s.level.name, 300, 80);
+  // Score
+  ctx.fillStyle = '#ffd700'; ctx.font = 'bold 40px monospace';
+  ctx.fillText(`AURA: ${s.score}`, 300, 140);
+  // Stars
+  const stars = s.score >= 20 ? 3 : s.score >= 10 ? 2 : 1;
+  ctx.font = '36px sans-serif';
+  ctx.fillText('⭐'.repeat(stars) + '☆'.repeat(3 - stars), 300, 190);
+  // Stats
+  ctx.fillStyle = '#aaa'; ctx.font = '14px monospace';
+  ctx.fillText(`lives remaining: ${'❤️'.repeat(s.lives)}`, 300, 230);
+  const skin = runnerSkins.find(sk => sk.id === getRunnerSkin()) || runnerSkins[0];
+  ctx.fillText(`character: ${skin.emoji} ${skin.name}`, 300, 255);
+  // Branding
+  ctx.fillStyle = '#666'; ctx.font = '12px monospace';
+  ctx.fillText('skibidi things — the upside down has wifi now', 300, 310);
+  ctx.fillText('jmg421.github.io/skibidi-things', 300, 328);
+  return c;
+}
+
+function showSaveButton(cardCanvas) {
+  let btn = document.getElementById('saveCardBtn');
+  if (!btn) {
+    btn = document.createElement('div');
+    btn.id = 'saveCardBtn';
+    btn.className = 'sb-btn';
+    btn.style.cssText = 'position:fixed;bottom:50px;right:12px;z-index:200;font-size:14px';
+    document.body.appendChild(btn);
+  }
+  btn.textContent = '📸 Save Victory Card';
+  btn.style.display = 'block';
+  btn.onclick = () => {
+    const link = document.createElement('a');
+    link.download = `skibidi-things-${Date.now()}.png`;
+    link.href = cardCanvas.toDataURL('image/png');
+    link.click();
+    btn.textContent = '✅ Saved!';
+    setTimeout(() => { btn.style.display = 'none'; }, 2000);
+  };
+}
 
 // --- Level Select ---
 function setupLevelSelect() {
