@@ -203,7 +203,7 @@ export function renderRunner(ctx, state) {
 
   if (showPlayer) {
     // Player glow
-    const playerHue = upsideDown ? 280 : (hue + 60) % 360;
+    const playerHue = state.skinHue !== undefined ? state.skinHue : (upsideDown ? 280 : (hue + 60) % 360);
     ctx.shadowColor = `hsl(${playerHue},100%,60%)`;
     ctx.shadowBlur = shield ? 25 : 15;
 

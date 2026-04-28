@@ -21,7 +21,47 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
+// --- Runner skins ---
+const runnerSkins = [
+  { id: 'mike', name: 'Mike', hue: 200, emoji: '🧒', unlock: 0 },
+  { id: 'eleven', name: 'Eleven', hue: 330, emoji: '👧', unlock: 1 },
+  { id: 'dustin', name: 'Dustin', hue: 180, emoji: '🧢', unlock: 2 },
+  { id: 'max', name: 'Max', hue: 15, emoji: '🎧', unlock: 3 },
+  { id: 'hopper', name: 'Hopper', hue: 40, emoji: '🎖️', unlock: 4 },
+  { id: 'demogorgon', name: 'Demogorgon', hue: 280, emoji: '🌸', unlock: 5 },
+  { id: 'vecna', name: 'Vecna', hue: 0, emoji: '🕷️', unlock: 6 },
+];
+
+function getChaptersBeaten() { return parseInt(localStorage.getItem('runner-chapters-beaten') || '0'); }
+function setChaptersBeaten(n) { const prev = getChaptersBeaten(); if (n > prev) localStorage.setItem('runner-chapters-beaten', n); }
+function getRunnerSkin() { return localStorage.getItem('runner-skin') || 'mike'; }
+function setRunnerSkin(id) { localStorage.setItem('runner-skin', id); }
+
+function getActiveSkinHue() {
+  const skin = runnerSkins.find(s => s.id === getRunnerSkin()) || runnerSkins[0];
+  return skin.hue;
+}
+
+function setupRunnerSkinPicker() {
+  const el = document.getElementById('skinpicker');
+  if (!el) return;
+  el.innerHTML = '';
+  const beaten = getChaptersBeaten();
+  const active = getRunnerSkin();
+  runnerSkins.forEach(s => {
+    const btn = document.createElement('div');
+    btn.className = 'sb-btn' + (s.id === active ? ' skin-active' : '');
+    const locked = s.unlock > beaten;
+    btn.textContent = locked ? `🔒 ${s.name}` : `${s.emoji} ${s.name}`;
+    btn.title = locked ? `Beat ${s.unlock} chapter${s.unlock > 1 ? 's' : ''} to unlock` : s.name;
+    if (locked) { btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed'; }
+    else { btn.addEventListener('click', () => { setRunnerSkin(s.id); setupRunnerSkinPicker(); }); }
+    el.appendChild(btn);
+  });
+}
+
 let state = createState(getLevelByIndex(0));
+state.skinHue = getActiveSkinHue();
 let currentLevel = 0;
 let lastTime = 0;
 let paused = false;
@@ -102,6 +142,7 @@ function checkTriggers(s) {
       : '🏆 YOU BEAT SKIBIDI THINGS 🏆';
     document.getElementById('gameover').querySelector('span').textContent = hasNext ? '[ next chapter ]' : '[ run it back ]';
     window.restartGame = hasNext ? () => advanceLevel(s.score, s.lives) : () => fullRestart();
+    if (!hasNext) { setChaptersBeaten(levels.length); setupRunnerSkinPicker(); }
     for (let i = 0; i < 15; i++) setTimeout(() => popEmoji(3), i * 50);
   }
   prevAlive = s.alive;
@@ -141,9 +182,12 @@ wireInput();
 function advanceLevel(carryScore, carryLives) {
   stopBgTrack();
   currentLevel++;
+  setChaptersBeaten(currentLevel);
+  setupRunnerSkinPicker();
   state = createState(getLevelByIndex(currentLevel));
   state.score = carryScore;
   state.lives = carryLives;
+  state.skinHue = getActiveSkinHue();
   lastTime = 0; paused = false;
   prevAlive = true; prevComplete = false;
   document.getElementById('gameover').style.display = 'none';
@@ -157,6 +201,7 @@ function fullRestart() {
   stopBgTrack();
   currentLevel = 0;
   state = createState(getLevelByIndex(0));
+  state.skinHue = getActiveSkinHue();
   lastTime = 0; paused = false;
   prevAlive = true; prevComplete = false;
   document.getElementById('gameover').style.display = 'none';
@@ -168,6 +213,7 @@ function fullRestart() {
 function restartCurrentLevel() {
   stopBgTrack();
   state = createState(getLevelByIndex(currentLevel));
+  state.skinHue = getActiveSkinHue();
   lastTime = 0; paused = false;
   prevAlive = true; prevComplete = false;
   document.getElementById('gameover').style.display = 'none';
@@ -181,7 +227,7 @@ window.restartGame = restartCurrentLevel;
 // --- Init (shared UI setup) ---
 setupLights();
 setupSoundboard();
-setupSkinPicker();
+setupRunnerSkinPicker();
 setupTrackPicker();
 setupTheme();
 setInterval(() => flickerLights(state.upsideDown), 200);
