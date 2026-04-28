@@ -1,7 +1,7 @@
 // Runner main — wires engine, renderer, input, audio, UI
 // Reuses existing input.js and ui.js — no duplication
 import { createState, update, switchLane, jump, setEventHandler, CANVAS_W, CANVAS_H } from './runner.js';
-import { getLevelByIndex, levels } from './level.js';
+import { getLevelByIndex, levels, LANE_COUNT } from './level.js';
 import { renderRunner } from './runner_renderer.js';
 import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, playEngine } from './audio.js';
 import { addParticles } from './particles.js';
@@ -121,6 +121,11 @@ function checkTriggers(s) {
     const prev = parseInt(localStorage.getItem('runner-highscore') || '0');
     const isNew = s.score > prev;
     if (isNew) localStorage.setItem('runner-highscore', s.score);
+    if (s.isDaily) {
+      const key = `daily-${getDaySeed()}`;
+      const best = parseInt(localStorage.getItem(key) || '0');
+      if (s.score > best) localStorage.setItem(key, s.score);
+    }
     showGameOver(s.score, prev, isNew);
     // Restart from current level, not level 1
     window.restartGame = () => restartCurrentLevel();
@@ -331,6 +336,72 @@ function showSaveButton(cardCanvas) {
   };
 }
 
+// --- Daily Challenge ---
+function getDaySeed() {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function seededRandom(seed) {
+  let s = seed;
+  return () => { s = (s * 16807 + 0) % 2147483647; return s / 2147483647; };
+}
+
+function generateDailyLevel() {
+  const seed = getDaySeed();
+  const rand = seededRandom(seed);
+  const events = [];
+  let t = 3000;
+  const duration = 55000;
+  const obstacleTypes = ['demogorgon', 'vine', 'tentacle'];
+  while (t < duration) {
+    const lane = Math.floor(rand() * LANE_COUNT);
+    events.push({ t, type: 'obstacle', lane, subtype: obstacleTypes[Math.floor(rand() * obstacleTypes.length)] });
+    if (rand() < 0.15) {
+      const lane2 = [0, 1, 2].filter(l => l !== lane)[Math.floor(rand() * 2)];
+      events.push({ t: t + 150, type: 'obstacle', lane: lane2, subtype: obstacleTypes[Math.floor(rand() * obstacleTypes.length)] });
+    }
+    if (rand() < 0.65) {
+      const cLane = Math.floor(rand() * LANE_COUNT);
+      const r = rand();
+      const csub = r < 0.08 ? 'heart' : r < 0.18 ? 'walkie' : r < 0.35 ? 'light' : 'eggo';
+      events.push({ t: t + 400, type: 'collectible', lane: cLane, subtype: csub });
+    }
+    t += 1100 + rand() * 900;
+  }
+  return {
+    name: `Daily Challenge #${getDaySeed() % 10000}`,
+    speed: 2.8, speedRamp: 0.0006, maxSpeed: 5, duration: 55000,
+    bg: [10 + (seed % 10), 5 + (seed % 8), 15 + (seed % 12)],
+    events: events.sort((a, b) => a.t - b.t),
+  };
+}
+
+function setupDailyButton() {
+  const el = document.getElementById('dailyBtn');
+  if (!el) return;
+  const todayKey = `daily-${getDaySeed()}`;
+  const bestToday = localStorage.getItem(todayKey);
+  const btn = document.createElement('div');
+  btn.className = 'sb-btn';
+  btn.style.fontSize = '13px';
+  btn.textContent = bestToday ? `🗓️ Daily Challenge (best: ${bestToday})` : '🗓️ Daily Challenge';
+  btn.addEventListener('click', () => {
+    const daily = generateDailyLevel();
+    currentLevel = -1; // special marker
+    state = createState(daily);
+    state.skinHue = getActiveSkinHue();
+    state.isDaily = true;
+    prevAlive = true; prevComplete = false;
+    document.getElementById('levelSelect').style.display = 'none';
+    document.getElementById('gameover').style.display = 'none';
+    document.getElementById('thought').textContent = `${daily.name}... same for everyone today 🗓️`;
+    wireInput();
+  });
+  el.innerHTML = '';
+  el.appendChild(btn);
+}
+
 // --- Level Select ---
 function setupLevelSelect() {
   const container = document.getElementById('levelBtns');
@@ -361,6 +432,7 @@ function setupLevelSelect() {
     container.appendChild(btn);
   });
   selectDiv.style.display = 'block';
+  setupDailyButton();
 }
 
 // --- Init (shared UI setup) ---
