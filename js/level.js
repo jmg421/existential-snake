@@ -2,12 +2,12 @@
 export const LANE_COUNT = 3;
 
 export const levels = [
-  { name: 'Chapter 1: Hawkins Lab',       speed: 2,   speedRamp: 0.0003, maxSpeed: 3,   duration: 40000, bg: [20,18,45],    events: null },
-  { name: 'Chapter 2: The Wheeler House', speed: 2.3, speedRamp: 0.0004, maxSpeed: 3.5, duration: 45000, bg: [12,35,20],    events: null },
-  { name: 'Chapter 3: The Upside Down',   speed: 2.6, speedRamp: 0.0005, maxSpeed: 4,   duration: 50000, bg: [40,10,50],    events: null },
-  { name: 'Chapter 4: Starcourt Mall',    speed: 3,   speedRamp: 0.0006, maxSpeed: 5,   duration: 55000, bg: [15,20,45],    events: null },
-  { name: 'Chapter 5: The Mind Flayer',   speed: 3.3, speedRamp: 0.0007, maxSpeed: 5.5, duration: 60000, bg: [40,12,18],    events: null },
-  { name: 'Chapter 6: Vecna\'s Lair',     speed: 3.6, speedRamp: 0.0008, maxSpeed: 6,   duration: 65000, bg: [50,8,8],      events: null },
+  { name: 'Chapter 1: Hawkins Lab',       speed: 2,   speedRamp: 0.0003, maxSpeed: 3,   duration: 40000, bg: [15,15,40],    events: null },
+  { name: 'Chapter 2: The Wheeler House', speed: 2.3, speedRamp: 0.0004, maxSpeed: 3.5, duration: 45000, bg: [10,30,18],    events: null },
+  { name: 'Chapter 3: The Upside Down',   speed: 2.6, speedRamp: 0.0005, maxSpeed: 4,   duration: 50000, bg: [50,5,10],     events: null },
+  { name: 'Chapter 4: Starcourt Mall',    speed: 3,   speedRamp: 0.0006, maxSpeed: 5,   duration: 55000, bg: [18,12,40],    events: null },
+  { name: 'Chapter 5: The Mind Flayer',   speed: 3.3, speedRamp: 0.0007, maxSpeed: 5.5, duration: 60000, bg: [35,8,12],     events: null },
+  { name: 'Chapter 6: Vecna\'s Lair',     speed: 3.6, speedRamp: 0.0008, maxSpeed: 6,   duration: 65000, bg: [55,0,5],      events: null },
 ];
 
 // Generate events for each level
@@ -19,12 +19,12 @@ function generateLevel(chapter) {
   let t = 3000;
 
   // Gentle ramp: each chapter ~15% harder than previous
-  const doubleChance =  [0, 0, 0.1, 0.15, 0.2, 0.3][chapter - 1];
-  const tripleChance =  [0, 0, 0, 0, 0.05, 0.1][chapter - 1];
-  const collectChance = [0.75, 0.7, 0.65, 0.6, 0.55, 0.5][chapter - 1];
-  const heartChance =   [0.15, 0.12, 0.1, 0.08, 0.06, 0.05][chapter - 1];
-  const minGap =        [1400, 1300, 1200, 1100, 1000, 900][chapter - 1];
-  const maxGap =        [2400, 2200, 2000, 1800, 1600, 1400][chapter - 1];
+  const doubleChance =  [0, 0.05, 0.15, 0.2, 0.25, 0.35][chapter - 1];
+  const tripleChance =  [0, 0, 0, 0.05, 0.1, 0.15][chapter - 1];
+  const collectChance = [0.7, 0.65, 0.6, 0.55, 0.5, 0.4][chapter - 1];
+  const heartChance =   [0.12, 0.1, 0.08, 0.06, 0.05, 0.04][chapter - 1];
+  const minGap =        [1200, 1100, 1000, 900, 800, 700][chapter - 1];
+  const maxGap =        [2000, 1800, 1600, 1500, 1300, 1100][chapter - 1];
   const flipInterval =  [0, 0, 20000, 18000, 15000, 12000][chapter - 1];
 
   const obstacleTypes = ['demogorgon', 'vine', 'tentacle'];
@@ -64,6 +64,12 @@ function generateLevel(chapter) {
     }
 
     t += minGap + Math.random() * (maxGap - minGap);
+  }
+
+  // Boss encounter at end of chapters 3 and 6
+  if (chapter === 3 || chapter === 6) {
+    const bossTime = duration - 2000;
+    events.push({ t: bossTime, type: 'boss', subtype: chapter === 3 ? 'demogorgon' : 'vecna' });
   }
 
   return events.sort((a, b) => a.t - b.t);

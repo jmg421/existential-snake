@@ -116,6 +116,19 @@ export function update(state, dt) {
       state.screenShake = 15;
       emit('dimension_flip', state.upsideDown);
       log(`dimension flip → ${state.upsideDown ? 'UPSIDE DOWN' : 'RIGHT-SIDE UP'}`);
+    } else if (ev.type === 'boss') {
+      state.boss = {
+        subtype: ev.subtype,
+        hp: ev.subtype === 'vecna' ? 5 : 3,
+        maxHp: ev.subtype === 'vecna' ? 5 : 3,
+        x: CANVAS_W - 80,
+        attackTimer: 0,
+        attackInterval: ev.subtype === 'vecna' ? 1200 : 1800,
+        defeated: false,
+      };
+      state.scrollSpeed = 0; // stop scrolling during boss
+      emit('boss_start', ev.subtype);
+      log(`BOSS: ${ev.subtype} hp=${state.boss.hp}`);
     }
     state.eventIdx++;
   }
@@ -187,10 +200,69 @@ export function update(state, dt) {
   // Screen shake decay
   if (state.screenShake > 0) { state.screenShake *= 0.85; if (state.screenShake < 0.5) state.screenShake = 0; }
 
-  // Level complete
+  // Boss update
+  if (state.boss && !state.boss.defeated) {
+    state.boss.attackTimer += dt;
+    if (state.boss.attackTimer >= state.boss.attackInterval) {
+      state.boss.attackTimer = 0;
+      // Fire projectile at a random lane
+      const lane = Math.floor(Math.random() * LANE_COUNT);
+      state.objects.push({
+        x: state.boss.x,
+        y: laneY(lane),
+        lane, type: 'obstacle', subtype: 'boss_attack',
+        w: OBJ_W, h: OBJ_H, active: true,
+        vx: -6, // moves left faster than normal
+      });
+      // Sometimes fire two lanes
+      if (state.boss.hp <= state.boss.maxHp / 2) {
+        const lane2 = [0,1,2].filter(l => l !== lane)[Math.floor(Math.random() * 2)];
+        state.objects.push({
+          x: state.boss.x,
+          y: laneY(lane2),
+          lane: lane2, type: 'obstacle', subtype: 'boss_attack',
+          w: OBJ_W, h: OBJ_H, active: true,
+          vx: -5,
+        });
+      }
+      emit('boss_attack');
+    }
+    // Player damages boss by jumping near it
+    if (state.jumping && state.jumpT > 100 && state.jumpT < 300) {
+      if (!state.boss._hitThisJump) {
+        state.boss.hp--;
+        state.boss._hitThisJump = true;
+        state.screenShake = 12;
+        state.score += 5;
+        emit('boss_hit', state.boss.hp);
+        log(`BOSS HIT hp=${state.boss.hp}`);
+        if (state.boss.hp <= 0) {
+          state.boss.defeated = true;
+          state.score += 20;
+          state.screenShake = 20;
+          emit('boss_defeated', state.boss.subtype);
+          log('BOSS DEFEATED');
+        }
+      }
+    }
+    if (!state.jumping) state.boss._hitThisJump = false;
+  }
+
+  // Move objects (boss projectiles have custom vx)
+  for (const obj of state.objects) {
+    if (!obj.active) continue;
+    if (obj.vx !== undefined) obj.x += obj.vx;
+  }
+
+  // Level complete — requires boss defeated if boss exists
   if (state.elapsed >= state.duration) {
-    state.complete = true;
-    log(`LEVEL COMPLETE score=${state.score} lives=${state.lives}`);
+    if (state.boss && !state.boss.defeated) {
+      // Don't complete until boss is dead — extend duration
+      state.duration += dt;
+    } else {
+      state.complete = true;
+      log(`LEVEL COMPLETE score=${state.score} lives=${state.lives}`);
+    }
   }
 }
 

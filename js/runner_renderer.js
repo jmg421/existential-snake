@@ -196,6 +196,49 @@ export function renderRunner(ctx, state) {
     }
   }
 
+  // Boss
+  if (state.boss && !state.boss.defeated) {
+    const b = state.boss;
+    const bx = b.x, by = CANVAS_H / 2;
+    const bSize = 60;
+    const pulse = Math.sin(elapsed / 200) * 4;
+
+    // Boss body
+    ctx.shadowColor = b.subtype === 'vecna' ? '#f00' : '#f0f';
+    ctx.shadowBlur = 20 + pulse;
+    ctx.fillStyle = b.subtype === 'vecna' ? '#600' : '#404';
+    ctx.beginPath(); ctx.roundRect(bx - bSize/2, by - bSize/2 + pulse, bSize, bSize, 12); ctx.fill();
+
+    // Boss face
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = b.subtype === 'vecna' ? '#f44' : '#f0f';
+    ctx.beginPath(); ctx.arc(bx - 12, by - 8 + pulse, 6, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(bx + 12, by - 8 + pulse, 6, 0, Math.PI * 2); ctx.fill();
+    // Angry mouth
+    ctx.strokeStyle = b.subtype === 'vecna' ? '#f44' : '#f0f';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(bx - 15, by + 12 + pulse);
+    ctx.lineTo(bx - 8, by + 8 + pulse);
+    ctx.lineTo(bx, by + 14 + pulse);
+    ctx.lineTo(bx + 8, by + 8 + pulse);
+    ctx.lineTo(bx + 15, by + 12 + pulse);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+
+    // HP bar
+    const hpW = 50, hpH = 6;
+    ctx.fillStyle = '#400';
+    ctx.fillRect(bx - hpW/2, by - bSize/2 - 14, hpW, hpH);
+    ctx.fillStyle = '#f44';
+    ctx.fillRect(bx - hpW/2, by - bSize/2 - 14, hpW * (b.hp / b.maxHp), hpH);
+
+    // Boss label
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 11px monospace'; ctx.textAlign = 'center';
+    ctx.fillText(b.subtype === 'vecna' ? 'VECNA' : 'DEMOGORGON', bx, by - bSize/2 - 18);
+    ctx.fillText('JUMP TO ATTACK!', bx, by + bSize/2 + 16);
+  }
+
   const jumpDur = state.jumpDuration || 400;
   const jumpOffset = jumping ? -Math.sin(jumpT / jumpDur * Math.PI) * 50 : 0;
   const px = PLAYER_X, py = playerY + jumpOffset;

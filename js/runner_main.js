@@ -97,6 +97,23 @@ setEventHandler((type, data) => {
       if (data) { beep(80, 0.5, 'sawtooth'); setTimeout(() => beep(60, 0.5, 'sawtooth'), 200); popEmoji(4); popText(true); showSTCharacter(); }
       else { beep(523, 0.15); setTimeout(() => beep(659, 0.15), 100); }
       break;
+    case 'boss_start':
+      beep(80, 0.8, 'sawtooth', 0.2); setTimeout(() => beep(60, 0.8, 'sawtooth', 0.2), 300);
+      document.getElementById('thought').textContent = data === 'vecna' ? '🕷️ VECNA APPEARS 🕷️' : '🌸 DEMOGORGON APPEARS 🌸';
+      popEmoji(8); popText(true);
+      break;
+    case 'boss_attack':
+      beep(150, 0.1, 'sawtooth', 0.15);
+      break;
+    case 'boss_hit':
+      beep(400, 0.1, 'square', 0.15); setTimeout(() => beep(500, 0.1, 'square', 0.12), 60);
+      popEmoji(3);
+      break;
+    case 'boss_defeated':
+      [523,659,784,1047].forEach((f,i) => setTimeout(() => beep(f, 0.2, 'square', 0.12), i * 100));
+      document.getElementById('thought').textContent = data === 'vecna' ? '🕷️ VECNA DEFEATED 🕷️' : '🌸 DEMOGORGON DEFEATED 🌸';
+      popEmoji(15); popText(false); showSTCharacter();
+      break;
   }
 });
 
