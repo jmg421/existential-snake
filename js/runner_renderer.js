@@ -141,11 +141,13 @@ export function renderRunner(ctx, state) {
   ctx.save();
   ctx.translate(sx, sy);
 
-  // Background
+  // Background — per-level color
+  const bg = state.level.bg || [3, 0, 3];
+  const pulse = Math.sin(elapsed / 1000) * 3;
   if (upsideDown) {
-    ctx.fillStyle = `rgb(${20 + Math.sin(elapsed / 1000) * 3},5,${35 + Math.sin(elapsed / 1000) * 3})`;
+    ctx.fillStyle = `rgb(${bg[0] + 15 + pulse},${bg[1]},${bg[2] + 15 + pulse})`;
   } else {
-    ctx.fillStyle = `hsl(${hue}, 5%, ${3 + Math.sin(elapsed / 1000)}%)`;
+    ctx.fillStyle = `rgb(${bg[0] + pulse},${bg[1] + pulse},${bg[2] + pulse})`;
   }
   ctx.fillRect(0, 0, cw, ch);
 

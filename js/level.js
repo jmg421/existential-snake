@@ -2,12 +2,12 @@
 export const LANE_COUNT = 3;
 
 export const levels = [
-  { name: 'Chapter 1: Hawkins Lab',       speed: 2,   speedRamp: 0.0003, maxSpeed: 3,   duration: 40000, events: null },
-  { name: 'Chapter 2: The Wheeler House', speed: 2.3, speedRamp: 0.0004, maxSpeed: 3.5, duration: 45000, events: null },
-  { name: 'Chapter 3: The Upside Down',   speed: 2.6, speedRamp: 0.0005, maxSpeed: 4,   duration: 50000, events: null },
-  { name: 'Chapter 4: Starcourt Mall',    speed: 3,   speedRamp: 0.0006, maxSpeed: 5,   duration: 55000, events: null },
-  { name: 'Chapter 5: The Mind Flayer',   speed: 3.3, speedRamp: 0.0007, maxSpeed: 5.5, duration: 60000, events: null },
-  { name: 'Chapter 6: Vecna\'s Lair',     speed: 3.6, speedRamp: 0.0008, maxSpeed: 6,   duration: 65000, events: null },
+  { name: 'Chapter 1: Hawkins Lab',       speed: 2,   speedRamp: 0.0003, maxSpeed: 3,   duration: 40000, bg: [10,8,20],     events: null },
+  { name: 'Chapter 2: The Wheeler House', speed: 2.3, speedRamp: 0.0004, maxSpeed: 3.5, duration: 45000, bg: [5,15,10],     events: null },
+  { name: 'Chapter 3: The Upside Down',   speed: 2.6, speedRamp: 0.0005, maxSpeed: 4,   duration: 50000, bg: [20,5,25],     events: null },
+  { name: 'Chapter 4: Starcourt Mall',    speed: 3,   speedRamp: 0.0006, maxSpeed: 5,   duration: 55000, bg: [8,8,18],      events: null },
+  { name: 'Chapter 5: The Mind Flayer',   speed: 3.3, speedRamp: 0.0007, maxSpeed: 5.5, duration: 60000, bg: [15,3,8],      events: null },
+  { name: 'Chapter 6: Vecna\'s Lair',     speed: 3.6, speedRamp: 0.0008, maxSpeed: 6,   duration: 65000, bg: [20,0,0],      events: null },
 ];
 
 // Generate events for each level
