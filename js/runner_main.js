@@ -82,6 +82,8 @@ function checkTriggers(s) {
     const isNew = s.score > prev;
     if (isNew) localStorage.setItem('runner-highscore', s.score);
     showGameOver(s.score, prev, isNew);
+    // Restart from current level, not level 1
+    window.restartGame = () => restartCurrentLevel();
   }
   if (s.complete && !prevComplete) {
     stopBgTrack();
@@ -162,7 +164,19 @@ function fullRestart() {
   canvas.style.filter = ''; canvas.style.transform = '';
   wireInput();
 }
-window.restartGame = fullRestart;
+
+function restartCurrentLevel() {
+  stopBgTrack();
+  state = createState(getLevelByIndex(currentLevel));
+  lastTime = 0; paused = false;
+  prevAlive = true; prevComplete = false;
+  document.getElementById('gameover').style.display = 'none';
+  document.getElementById('thought').textContent = `retry ${levels[currentLevel].name}... let's go 🔴`;
+  canvas.style.filter = ''; canvas.style.transform = '';
+  wireInput();
+}
+
+window.restartGame = restartCurrentLevel;
 
 // --- Init (shared UI setup) ---
 setupLights();

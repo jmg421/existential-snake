@@ -262,6 +262,9 @@ export function renderRunner(ctx, state) {
   ctx.textAlign = 'left';
   ctx.textBaseline = 'top';
   ctx.fillText(`AURA: ${score}`, 10, 10);
+  ctx.fillStyle = '#888'; ctx.font = '12px monospace';
+  ctx.fillText(state.level.name, 10, 30);
+  ctx.fillStyle = '#fff'; ctx.font = 'bold 16px monospace';
   ctx.fillText(`${'❤️'.repeat(state.lives)}${'🖤'.repeat(state.maxLives - state.lives)}`, 10, 50);
   if (combo > 1) {
     ctx.fillStyle = `hsl(${(hue + combo * 30) % 360},100%,70%)`;
