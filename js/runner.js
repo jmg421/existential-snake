@@ -7,7 +7,7 @@ export function setEventHandler(fn) { onEvent = fn; }
 
 function emit(type, data) { if (onEvent) onEvent(type, data); }
 
-const CANVAS_W = 600, CANVAS_H = 400;
+const CANVAS_W = 800, CANVAS_H = 400;
 const LANE_H = CANVAS_H / (LANE_COUNT + 1); // divide canvas into sections
 const PLAYER_X = 100;
 const PLAYER_W = 36, PLAYER_H = 36;

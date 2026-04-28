@@ -88,7 +88,7 @@ function checkTriggers(s) {
   if (s.complete && !prevComplete) {
     stopBgTrack();
     beep(523, 0.15); setTimeout(() => beep(659, 0.15), 100); setTimeout(() => beep(784, 0.3), 200);
-    const stars = s.score >= 30 ? 3 : s.score >= 15 ? 2 : 1;
+    const stars = s.score >= 20 ? 3 : s.score >= 10 ? 2 : 1;
     const prev = parseInt(localStorage.getItem('runner-highscore') || '0');
     if (s.score > prev) localStorage.setItem('runner-highscore', s.score);
     const el = document.getElementById('gameover');
