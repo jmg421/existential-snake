@@ -196,9 +196,23 @@ export function renderRunner(ctx, state) {
     }
   }
 
-  // Player
-  const jumpOffset = jumping ? -Math.sin(jumpT / 400 * Math.PI) * 50 : 0;
+  const jumpDur = state.jumpDuration || 400;
+  const jumpOffset = jumping ? -Math.sin(jumpT / jumpDur * Math.PI) * 50 : 0;
   const px = PLAYER_X, py = playerY + jumpOffset;
+  const bigHead = state.mutators && state.mutators.has('bighead');
+  const pw = bigHead ? PLAYER_W * 1.8 : PLAYER_W;
+  const ph = bigHead ? PLAYER_H * 1.8 : PLAYER_H;
+  const pxAdj = bigHead ? px - (pw - PLAYER_W) / 2 : px;
+  const pyAdj = bigHead ? py - (ph - PLAYER_H) / 2 : py;
+
+  // Rainbow trail
+  if (state.mutators && state.mutators.has('rainbow') && state.started && state.alive) {
+    const trailHue = (elapsed / 3) % 360;
+    ctx.fillStyle = `hsla(${trailHue},100%,60%,0.3)`;
+    ctx.beginPath(); ctx.roundRect(pxAdj - 20, pyAdj + 4, 18, ph - 8, 4); ctx.fill();
+    ctx.fillStyle = `hsla(${(trailHue + 40) % 360},100%,60%,0.2)`;
+    ctx.beginPath(); ctx.roundRect(pxAdj - 38, pyAdj + 8, 16, ph - 16, 4); ctx.fill();
+  }
 
   // Skip drawing player every other frame when invincible (flash effect)
   const showPlayer = !state.invincible || Math.floor(elapsed / 80) % 2 === 0;
@@ -212,17 +226,17 @@ export function renderRunner(ctx, state) {
     // Player body
     ctx.fillStyle = `hsl(${playerHue},80%,${upsideDown ? 60 : 70}%)`;
     ctx.beginPath();
-    ctx.roundRect(px, py, PLAYER_W, PLAYER_H, 8);
+    ctx.roundRect(pxAdj, pyAdj, pw, ph, 8);
     ctx.fill();
 
     // Player face
     ctx.shadowBlur = 0;
     ctx.fillStyle = '#000';
-    ctx.beginPath(); ctx.arc(px + 12, py + 14, 4, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(px + 24, py + 14, 4, 0, Math.PI * 2); ctx.fill();
-    // Mouth
+    const faceScale = bigHead ? 1.8 : 1;
+    ctx.beginPath(); ctx.arc(pxAdj + 12 * faceScale, pyAdj + 14 * faceScale, 4 * faceScale, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(pxAdj + 24 * faceScale, pyAdj + 14 * faceScale, 4 * faceScale, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath();
-    ctx.arc(px + 18, py + 24, 6, 0, Math.PI);
+    ctx.arc(pxAdj + 18 * faceScale, pyAdj + 24 * faceScale, 6 * faceScale, 0, Math.PI);
     ctx.stroke();
 
     // Shield indicator
@@ -230,7 +244,7 @@ export function renderRunner(ctx, state) {
       ctx.strokeStyle = `hsla(180,100%,70%,${0.5 + Math.sin(elapsed / 100) * 0.3})`;
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(px + PLAYER_W / 2, py + PLAYER_H / 2, PLAYER_W * 0.7, 0, Math.PI * 2);
+      ctx.arc(pxAdj + pw / 2, pyAdj + ph / 2, pw * 0.7, 0, Math.PI * 2);
       ctx.stroke();
       ctx.lineWidth = 1;
     }

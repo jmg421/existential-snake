@@ -79,7 +79,8 @@ export function update(state, dt) {
   // Jump arc
   if (state.jumping) {
     state.jumpT += dt;
-    if (state.jumpT > 400) { state.jumping = false; state.jumpT = 0; }
+    const jDur = state.jumpDuration || 400;
+    if (state.jumpT > jDur) { state.jumping = false; state.jumpT = 0; }
   }
 
   // Invincibility timer

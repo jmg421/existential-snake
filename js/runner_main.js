@@ -172,6 +172,10 @@ function wireInput() {
     onPause() { togglePause(); },
     onStart() {
       state.started = true;
+      // Apply mutators
+      state.mutators = new Set(activeMutators);
+      if (state.mutators.has('speed2x')) { state.scrollSpeed *= 2; state.level = { ...state.level, maxSpeed: state.level.maxSpeed * 2 }; }
+      if (state.mutators.has('lowgrav')) state.jumpDuration = 700;
       startBgTrack();
       document.getElementById('thought').textContent = 'locked in at hawkins 🔒🔴';
       document.getElementById('levelSelect').style.display = 'none';
@@ -230,6 +234,44 @@ function restartCurrentLevel() {
 }
 
 window.restartGame = restartCurrentLevel;
+
+// --- Mutators (unlock after beating all chapters) ---
+const mutators = [
+  { id: 'bighead', name: '🤯 Big Head', desc: 'Player is huge' },
+  { id: 'lowgrav', name: '🌙 Low Gravity', desc: 'Floaty jumps' },
+  { id: 'speed2x', name: '⚡ 2x Speed', desc: 'Everything faster' },
+  { id: 'rainbow', name: '🌈 Rainbow Trail', desc: 'Leave a trail' },
+];
+let activeMutators = new Set();
+
+function setupMutatorPicker() {
+  let el = document.getElementById('mutatorPicker');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'mutatorPicker';
+    el.style.cssText = 'text-align:center;margin:6px 0';
+    const pickers = document.getElementById('pickers');
+    if (pickers) pickers.appendChild(el);
+  }
+  el.innerHTML = '';
+  if (getChaptersBeaten() < levels.length) {
+    el.innerHTML = '<div style="font-size:11px;color:#555">🔒 beat all 6 chapters to unlock mutators</div>';
+    return;
+  }
+  el.innerHTML = '<div style="font-size:12px;color:#888;margin-bottom:4px">mutators</div>';
+  mutators.forEach(m => {
+    const btn = document.createElement('div');
+    btn.className = 'sb-btn' + (activeMutators.has(m.id) ? ' skin-active' : '');
+    btn.textContent = m.name;
+    btn.title = m.desc;
+    btn.style.fontSize = '12px'; btn.style.padding = '4px 8px';
+    btn.addEventListener('click', () => {
+      if (activeMutators.has(m.id)) activeMutators.delete(m.id); else activeMutators.add(m.id);
+      setupMutatorPicker();
+    });
+    el.appendChild(btn);
+  });
+}
 
 // --- Victory Card ---
 function generateVictoryCard(s, title) {
@@ -325,6 +367,7 @@ function setupLevelSelect() {
 setupLights();
 setupSoundboard();
 setupRunnerSkinPicker();
+setupMutatorPicker();
 setupTrackPicker();
 setupTheme();
 setupLevelSelect();
