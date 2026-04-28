@@ -189,7 +189,7 @@ function wireInput() {
       unlockAudio();
       if (d.y === -1) { switchLane(state, -1); beep(440, 0.04, 'sine', 0.08); }
       else if (d.y === 1) { switchLane(state, 1); beep(330, 0.04, 'sine', 0.08); }
-      else if (d.x !== 0) jump(state);
+      else { jump(state); beep(520, 0.03, 'sine', 0.06); } // any horizontal = jump
     },
     onPause() { togglePause(); },
     onStart() {
@@ -207,6 +207,24 @@ function wireInput() {
   });
 }
 wireInput();
+
+// Geometry Dash style: tap/click canvas = jump
+canvas.addEventListener('click', () => {
+  unlockAudio();
+  if (!state.started || !state.alive || state.complete) return;
+  jump(state);
+  beep(520, 0.03, 'sine', 0.06);
+});
+// Spacebar = jump
+document.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    e.preventDefault();
+    unlockAudio();
+    if (!state.started || !state.alive || state.complete) return;
+    jump(state);
+    beep(520, 0.03, 'sine', 0.06);
+  }
+});
 
 // --- Restart / Advance ---
 function advanceLevel(carryScore, carryLives) {
@@ -472,7 +490,7 @@ setInterval(() => flickerLights(state.upsideDown), 200);
 const savedHigh = localStorage.getItem('runner-highscore');
 document.getElementById('thought').textContent = savedHigh && parseInt(savedHigh) > 0
   ? `best aura: ${savedHigh} — pick a chapter or swipe to start 🔴`
-  : 'swipe up/down to switch lanes. tap to jump. 🔴';
+  : 'tap to jump. swipe up/down to switch lanes. 🔴';
 
 // --- Easter Eggs ---
 const konamiCode = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
