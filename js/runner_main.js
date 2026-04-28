@@ -450,4 +450,34 @@ document.getElementById('thought').textContent = savedHigh && parseInt(savedHigh
   ? `best aura: ${savedHigh} — pick a chapter or swipe to start 🔴`
   : 'swipe up/down to switch lanes. tap to jump. 🔴';
 
+// --- Easter Eggs ---
+const konamiCode = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiIdx = 0;
+document.addEventListener('keydown', e => {
+  if (e.key === konamiCode[konamiIdx]) {
+    konamiIdx++;
+    if (konamiIdx === konamiCode.length) {
+      konamiIdx = 0;
+      setChaptersBeaten(levels.length);
+      setupRunnerSkinPicker();
+      setupMutatorPicker();
+      setupLevelSelect();
+      document.getElementById('thought').textContent = '🚽 SKIBIDI CHEAT ACTIVATED — all chapters unlocked 🚽';
+      beep(523, 0.1); beep(659, 0.1); setTimeout(() => beep(784, 0.1), 100);
+      popEmoji(15); popText(false);
+    }
+  } else { konamiIdx = 0; }
+});
+
+// Type "011" during gameplay to skip level
+let secretBuf = '';
+document.addEventListener('keydown', e => {
+  if (e.key.length === 1) secretBuf = (secretBuf + e.key).slice(-3);
+  if (secretBuf === '011' && state.started && state.alive && !state.complete) {
+    state.complete = true;
+    secretBuf = '';
+    document.getElementById('thought').textContent = '👧 eleven says: friends don\'t lie. but they do skip levels.';
+  }
+});
+
 requestAnimationFrame(frame);
