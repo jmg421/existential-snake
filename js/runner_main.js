@@ -172,6 +172,7 @@ function wireInput() {
       state.started = true;
       startBgTrack();
       document.getElementById('thought').textContent = 'locked in at hawkins 🔒🔴';
+      document.getElementById('levelSelect').style.display = 'none';
       beep(523, 0.1); beep(659, 0.1);
     },
   });
@@ -205,8 +206,9 @@ function fullRestart() {
   lastTime = 0; paused = false;
   prevAlive = true; prevComplete = false;
   document.getElementById('gameover').style.display = 'none';
-  document.getElementById('thought').textContent = 'swipe up/down to switch lanes. tap to jump. 🔴';
+  document.getElementById('thought').textContent = 'pick a chapter or swipe to start 🔴';
   canvas.style.filter = ''; canvas.style.transform = '';
+  setupLevelSelect();
   wireInput();
 }
 
@@ -224,17 +226,50 @@ function restartCurrentLevel() {
 
 window.restartGame = restartCurrentLevel;
 
+// --- Level Select ---
+function setupLevelSelect() {
+  const container = document.getElementById('levelBtns');
+  const selectDiv = document.getElementById('levelSelect');
+  if (!container || !selectDiv) return;
+  container.innerHTML = '';
+  const beaten = getChaptersBeaten();
+  levels.forEach((lvl, i) => {
+    const unlocked = i === 0 || i <= beaten;
+    const btn = document.createElement('div');
+    btn.className = 'sb-btn';
+    btn.textContent = unlocked ? `${i + 1}. ${lvl.name.split(': ')[1] || lvl.name}` : `🔒 Ch.${i + 1}`;
+    btn.style.fontSize = '12px';
+    btn.style.padding = '6px 10px';
+    if (!unlocked) { btn.style.opacity = '0.4'; btn.style.cursor = 'not-allowed'; }
+    else {
+      btn.addEventListener('click', () => {
+        currentLevel = i;
+        state = createState(getLevelByIndex(i));
+        state.skinHue = getActiveSkinHue();
+        prevAlive = true; prevComplete = false;
+        selectDiv.style.display = 'none';
+        document.getElementById('gameover').style.display = 'none';
+        document.getElementById('thought').textContent = `${lvl.name}... swipe to start 🔴`;
+        wireInput();
+      });
+    }
+    container.appendChild(btn);
+  });
+  selectDiv.style.display = 'block';
+}
+
 // --- Init (shared UI setup) ---
 setupLights();
 setupSoundboard();
 setupRunnerSkinPicker();
 setupTrackPicker();
 setupTheme();
+setupLevelSelect();
 setInterval(() => flickerLights(state.upsideDown), 200);
 
 const savedHigh = localStorage.getItem('runner-highscore');
 document.getElementById('thought').textContent = savedHigh && parseInt(savedHigh) > 0
-  ? `best aura: ${savedHigh} — swipe up/down, tap to jump 🔴`
+  ? `best aura: ${savedHigh} — pick a chapter or swipe to start 🔴`
   : 'swipe up/down to switch lanes. tap to jump. 🔴';
 
 requestAnimationFrame(frame);
