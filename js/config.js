@@ -5,8 +5,8 @@ export const SPEED_MIN = 45;
 export const SPEED_DECREMENT = 3;
 
 export const stChars = ['🧒','👧','🚲','🧇','📺','💡','🎄','🔦','🏚️','🕷️','👾','🌀','🔴','⬡'];
-export const emojis = ['💀','🗿','😭','🔥','💯','🧠','👁️','🫠','🤡','😈','🕷️','🔴','⬡','👾','🌀','🫨','🤯','🧇','💡','📺','🚲','🎄'];
-export const floatTexts = ['GYATT','SIGMA','RIZZ','SKIBIDI','BUSSIN','GOATED','SLAY','NO CAP','FR FR','OHIO','FANUM TAX','BASED','SHEESH','LOCK IN','AURA +100','BRAINROT','DELULU','ELEVEN/10','FRIENDS DONT LIE','THE UPSIDE DOWN','RUN','VECNA RIZZ','DEMOGORGON ATE','HAWKINS OHIO','MOUTH BREATHER','SHOULD I STAY OR SHOULD I GO','RUNNING UP THAT HILL','MORNINGS ARE FOR COFFEE AND CONTEMPLATION','VROOM VROOM','SPEED DEMON','TURBO MODE','GAS GAS GAS','INITIAL D MOMENT','TOKYO DRIFT','NEED FOR SPEED','FAST AND FURIOUS','PEDAL TO THE METAL','ZOOM ZOOM','BUILT DIFFERENT','MAIN CHARACTER','PLOT ARMOR','SIDE QUEST','NPC BEHAVIOR','RESPAWN','CLUTCH','GG EZ','SKILL DIFF','TOUCH GRASS','ITS GIVING','SNATCHED','UNDERSTOOD THE ASSIGNMENT'];
+export const emojis = ['💀','🗿','😭','🔥','💯','🧠','👁️','🫠','🤡','😈','🕷️','🔴','⬡','👾','🌀','🫨','🤯','🧇','💡','📺','🚲','🎄','🚽'];
+export const floatTexts = ['GYATT','SIGMA','RIZZ','SKIBIDI','BUSSIN','GOATED','SLAY','NO CAP','FR FR','OHIO','FANUM TAX','BASED','SHEESH','LOCK IN','AURA +100','BRAINROT','DELULU','ELEVEN/10','FRIENDS DONT LIE','THE UPSIDE DOWN','RUN','VECNA RIZZ','DEMOGORGON ATE','HAWKINS OHIO','MOUTH BREATHER','SHOULD I STAY OR SHOULD I GO','RUNNING UP THAT HILL','MORNINGS ARE FOR COFFEE AND CONTEMPLATION','VROOM VROOM','SPEED DEMON','TURBO MODE','GAS GAS GAS','INITIAL D MOMENT','TOKYO DRIFT','NEED FOR SPEED','FAST AND FURIOUS','PEDAL TO THE METAL','ZOOM ZOOM','BUILT DIFFERENT','MAIN CHARACTER','PLOT ARMOR','SIDE QUEST','NPC BEHAVIOR','RESPAWN','CLUTCH','GG EZ','SKILL DIFF','TOUCH GRASS','ITS GIVING','SNATCHED','UNDERSTOOD THE ASSIGNMENT','CHA CHA CHA','SKIBIDI DOP DOP','🚽 TOILET HUMOR','SPLATTER PATTERN','WHEN YOU FEEL IT','BUM BUM BUM'];
 
 export const stAsciiChars = [
   {name:'ELEVEN',art:'011',color:'#f8a'},
@@ -35,10 +35,13 @@ export const thoughts = [
 export const lessons = [
   "SCORE aura. consumed by the upside down.\nvecna sends his regards 🕷️","skill issue + ratio + fell off\n+ no aura + the demogorgon ate better","the lights flickered SCORE times\nand then went dark forever\njust like your attention span",
   "you survived SCORE meals in hawkins\nwhich is SCORE more than barb 💀\n(rip barb. gone but not forgotten.)","the mind flayer claimed another one\nSCORE points of pure delusion\nthe upside down remembers nothing",
-  "SCORE aura lost between dimensions\nshould have run up that hill\nshould have played your favorite song\nbut you chose to be a snake instead 🎧"
+  "SCORE aura lost between dimensions\nshould have run up that hill\nshould have played your favorite song\nbut you chose to be a snake instead 🎧",
+  "when you're climbing up the ladder\nand you feel something splatter\n🚽 diarrhea cha cha cha 🚽\nSCORE aura down the drain",
+  "when you're sliding into first\nand you feel your stomach burst\n🚽 skibidi dop dop yes yes 🚽",
+  "when you're running from the demogorgon\nand your pants feel really wrong-on\n🚽 diarrhea cha cha cha 🚽\nSCORE aura. gone."
 ];
 
-export const goTitles = ["VECNA GOT YOU 🕷️","THE UPSIDE DOWN WINS","💀 DEMOGORGOND 💀","SKILL ISSUE (HAWKINS EDITION)","THE GATE CLOSED ON YOU","MOUTH BREATHER 🗿","BARBD 💀"];
+export const goTitles = ["VECNA GOT YOU 🕷️","THE UPSIDE DOWN WINS","💀 DEMOGORGOND 💀","SKILL ISSUE (HAWKINS EDITION)","THE GATE CLOSED ON YOU","MOUTH BREATHER 🗿","BARBD 💀","🚽 SKIBIDI'D 🚽","💀 CHA CHA CHA 💀","🚽 SPLATTERED 🚽"];
 
 // Snake skins — unlocked by high score milestones
 export const skins = [
