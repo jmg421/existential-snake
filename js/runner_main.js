@@ -23,13 +23,13 @@ window.addEventListener('resize', resizeCanvas);
 
 // --- Runner skins ---
 const runnerSkins = [
-  { id: 'mike', name: 'Mike', hue: 200, emoji: '🧒', unlock: 0 },
-  { id: 'eleven', name: 'Eleven', hue: 330, emoji: '👧', unlock: 1 },
-  { id: 'dustin', name: 'Dustin', hue: 180, emoji: '🧢', unlock: 2 },
-  { id: 'max', name: 'Max', hue: 15, emoji: '🎧', unlock: 3 },
-  { id: 'hopper', name: 'Hopper', hue: 40, emoji: '🎖️', unlock: 4 },
-  { id: 'demogorgon', name: 'Demogorgon', hue: 280, emoji: '🌸', unlock: 5 },
-  { id: 'vecna', name: 'Vecna', hue: 0, emoji: '🕷️', unlock: 6 },
+  { id: 'default', name: 'Normie', hue: 200, emoji: '🧒', unlock: 0 },
+  { id: 'nosebleed', name: 'Nosebleed', hue: 330, emoji: '🩸', unlock: 1 },
+  { id: 'walkie', name: 'Walkie Talkie', hue: 180, emoji: '📻', unlock: 2 },
+  { id: 'kate', name: 'Running Up That Hill', hue: 15, emoji: '🎧', unlock: 3 },
+  { id: 'eggo', name: 'Eggo Waffle', hue: 40, emoji: '🧇', unlock: 4 },
+  { id: 'upsidedown', name: 'Upside Downer', hue: 280, emoji: '🌀', unlock: 5 },
+  { id: 'skibidi', name: 'Skibidi Toilet', hue: 0, emoji: '🚽', unlock: 6 },
 ];
 
 function getChaptersBeaten() { return parseInt(localStorage.getItem('runner-chapters-beaten') || '0'); }
@@ -177,13 +177,14 @@ function wireInput() {
     onPause() { togglePause(); },
     onStart() {
       state.started = true;
-      // Apply mutators
       state.mutators = new Set(activeMutators);
       if (state.mutators.has('speed2x')) { state.scrollSpeed *= 2; state.level = { ...state.level, maxSpeed: state.level.maxSpeed * 2 }; }
       if (state.mutators.has('lowgrav')) state.jumpDuration = 700;
       startBgTrack();
       document.getElementById('thought').textContent = 'locked in at hawkins 🔒🔴';
       document.getElementById('levelSelect').style.display = 'none';
+      document.getElementById('pickers').style.display = 'none';
+      document.getElementById('soundboard').style.display = 'none';
       beep(523, 0.1); beep(659, 0.1);
     },
   });
@@ -194,6 +195,8 @@ wireInput();
 function advanceLevel(carryScore, carryLives) {
   stopBgTrack();
   const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
+  document.getElementById('pickers').style.display = '';
+  document.getElementById('soundboard').style.display = '';
   currentLevel++;
   setChaptersBeaten(currentLevel);
   setupRunnerSkinPicker();
@@ -213,6 +216,8 @@ function advanceLevel(carryScore, carryLives) {
 function fullRestart() {
   stopBgTrack();
   const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
+  document.getElementById('pickers').style.display = '';
+  document.getElementById('soundboard').style.display = '';
   currentLevel = 0;
   state = createState(getLevelByIndex(0));
   state.skinHue = getActiveSkinHue();
@@ -228,6 +233,8 @@ function fullRestart() {
 function restartCurrentLevel() {
   stopBgTrack();
   const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
+  document.getElementById('pickers').style.display = '';
+  document.getElementById('soundboard').style.display = '';
   state = createState(getLevelByIndex(currentLevel));
   state.skinHue = getActiveSkinHue();
   lastTime = 0; paused = false;
