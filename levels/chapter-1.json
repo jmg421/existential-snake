@@ -11,14 +11,19 @@
     {"beat":8,"type":"spike"},
     {"beat":16,"type":"spike"},
     {"beat":24,"type":"spike"},
-    {"beat":32,"type":"spike"},
 
-    {"beat":42,"type":"spike"},
-    {"beat":48,"type":"spike"},
-    {"beat":54,"type":"spike"},
-    {"beat":60,"type":"spike"},
+    {"beat":32,"type":"block","h":1},
+    {"beat":34,"type":"block","h":2},
+    {"beat":36,"type":"block","h":3},
 
-    {"beat":68,"type":"block","h":1},
+    {"beat":44,"type":"spike"},
+    {"beat":50,"type":"spike"},
+
+    {"beat":58,"type":"block","h":1},
+    {"beat":60,"type":"block","h":2},
+    {"beat":62,"type":"spike","y":2},
+
+    {"beat":70,"type":"spike"},
     {"beat":76,"type":"spike"},
     {"beat":82,"type":"spike"},
     {"beat":88,"type":"spike"},
