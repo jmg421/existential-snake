@@ -11,24 +11,24 @@
     {"beat":6,"type":"spike"},
 
     {"beat":10,"type":"block","h":1},
+    {"beat":11,"type":"block","h":1},
     {"beat":12,"type":"block","h":1},
-    {"beat":14,"type":"block","h":1},
 
     {"beat":20,"type":"spike"},
     {"beat":24,"type":"spike"},
 
     {"beat":30,"type":"block","h":1},
+    {"beat":31,"type":"block","h":1},
     {"beat":32,"type":"block","h":1},
-    {"beat":34,"type":"block","h":1},
-    {"beat":36,"type":"spike","y":1},
+    {"beat":33,"type":"spike","y":1},
 
     {"beat":42,"type":"spike"},
     {"beat":45,"type":"spike"},
     {"beat":48,"type":"spike"},
 
     {"beat":54,"type":"block","h":1},
-    {"beat":56,"type":"block","h":1},
-    {"beat":58,"type":"spike","y":1},
+    {"beat":55,"type":"block","h":1},
+    {"beat":56,"type":"spike","y":1},
 
     {"beat":64,"type":"spike"},
     {"beat":67,"type":"spike"},
@@ -62,7 +62,7 @@
     {"beat":152,"type":"spike"},
 
     {"beat":160,"type":"block","h":1},
-    {"beat":162,"type":"block","h":1},
+    {"beat":161,"type":"block","h":1},
     {"beat":164,"type":"spike","y":1},
     {"beat":168,"type":"spike"},
     {"beat":170,"type":"spike"},
@@ -80,8 +80,8 @@
     {"beat":204,"type":"spike"},
 
     {"beat":212,"type":"block","h":1},
+    {"beat":213,"type":"block","h":1},
     {"beat":214,"type":"block","h":1},
-    {"beat":216,"type":"block","h":1},
     {"beat":218,"type":"spike","y":1},
 
     {"beat":226,"type":"spike"},
@@ -114,8 +114,8 @@
     {"beat":302,"type":"spike"},
 
     {"beat":310,"type":"block","h":1},
+    {"beat":311,"type":"block","h":1},
     {"beat":312,"type":"block","h":1},
-    {"beat":314,"type":"block","h":1},
 
     {"beat":322,"type":"spike"},
     {"beat":324,"type":"spike"},
@@ -137,7 +137,7 @@
     {"beat":364,"type":"spike"},
 
     {"beat":372,"type":"block","h":1},
-    {"beat":374,"type":"block","h":1},
+    {"beat":373,"type":"block","h":1},
     {"beat":376,"type":"spike","y":1},
     {"beat":380,"type":"spike"},
     {"beat":382,"type":"spike"},
@@ -149,8 +149,8 @@
     {"beat":398,"type":"spike"},
 
     {"beat":406,"type":"block","h":1},
+    {"beat":407,"type":"block","h":1},
     {"beat":408,"type":"block","h":1},
-    {"beat":410,"type":"block","h":1},
     {"beat":412,"type":"spike","y":1},
 
     {"beat":420,"type":"spike"},
