@@ -22,6 +22,7 @@ let checkpointMsg = '';
 let checkpointMsgTimer = 0;
 // Precomputed world-x positions for all objects
 let worldObjects = [];
+let levelEndBeat = 0;
 
 const canvas = document.getElementById('c');
 canvas.width = CW;
@@ -50,6 +51,9 @@ async function loadLevel(url) {
     w: o.w || 1,
     h: o.h || 1,
   }));
+  // Level ends 8 beats after last obstacle
+  const lastBeat = Math.max(...level.objects.map(o => o.beat));
+  levelEndBeat = lastBeat + 8;
   // Set initial colors
   if (level.triggers.length) {
     const first = level.triggers.find(t => t.type === 'color');
@@ -140,7 +144,7 @@ function frame(now) {
   const currentBeat = beat();
   const pxPerBeat = level.meta.speed * UNIT;
   const scrollX = st * level.meta.speed * UNIT * getBpm() / 60;
-  const songPct = st / duration();
+  const songPct = Math.min(1, beat() / levelEndBeat);
 
   // Track checkpoint at every 5%
   const pctFloor = Math.floor(songPct * 20) / 20;
@@ -192,7 +196,7 @@ function buildState() {
     flashColor,
     shake: shake > 0.5 ? shake : 0,
     attempts,
-    songPct: started ? songTime() / duration() : 0,
+    songPct: started ? Math.min(1, beat() / levelEndBeat) : 0,
     bg, gnd, checkpoint, won, checkpointMsg, checkpointMsgTimer,
   };
 }
