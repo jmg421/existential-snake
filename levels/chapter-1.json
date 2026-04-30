@@ -90,10 +90,9 @@
     {"beat":370,"type":"spike"},
     {"beat":373,"type":"spike"},
 
-    {"beat":382,"type":"block","h":1},
-    {"beat":383,"type":"block","h":2},
-    {"beat":384,"type":"block","h":3},
-    {"beat":386,"type":"spike","y":3},
+    {"beat":382,"type":"block","h":1,"w":3},
+    {"beat":386,"type":"block","h":2,"w":3},
+    {"beat":394,"type":"spike"},
 
     {"beat":396,"type":"spike"},
     {"beat":399,"type":"spike"},
@@ -167,11 +166,9 @@
     {"beat":652,"type":"spike"},
     {"beat":654,"type":"spike"},
 
-    {"beat":664,"type":"block","h":2},
-    {"beat":666,"type":"block","h":3},
-    {"beat":668,"type":"spike","y":3},
-
-    {"beat":680,"type":"spike"},
+    {"beat":664,"type":"block","h":1,"w":3},
+    {"beat":668,"type":"block","h":2,"w":3},
+    {"beat":676,"type":"spike"},
     {"beat":682,"type":"spike"},
     {"beat":684,"type":"spike"},
     {"beat":686,"type":"spike"},
