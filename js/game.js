@@ -174,7 +174,6 @@ function onTap() {
   if (!started) {
     started = true;
     play();
-    return;
   }
   if (player.dead) return;
   jump(player);
