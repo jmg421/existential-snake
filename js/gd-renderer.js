@@ -2,10 +2,12 @@
 import { UNIT, PLAYER_X, PLAYER_SIZE } from './physics.js';
 
 const CW = 800, CH = 400;
-const GROUND_Y = CH - 80; // ground line in canvas pixels
+const GROUND_Y = CH - 80;
+const SLOPE = 0.06;
 
-// Convert world-y (units above ground) to canvas-y
-function toCanvasY(worldY) { return GROUND_Y - worldY * UNIT; }
+// Convert world-y to canvas-y, accounting for slope at screen-x position
+function groundAtX(sx) { return GROUND_Y + (CW - sx) * SLOPE; }
+function toCanvasY(worldY, sx) { return groundAtX(sx) - worldY * UNIT; }
 
 export function render(ctx, state) {
   const { player, scrollX, level, objects, triggers, flash, attempts, songPct } = state;
@@ -57,7 +59,7 @@ export function render(ctx, state) {
     const ow = (obj.w || 1);
 
     if (obj.type === 'spike') {
-      const bx = sx, by = toCanvasY(oy);
+      const bx = sx, by = toCanvasY(oy, sx);
       ctx.fillStyle = '#f44';
       ctx.shadowColor = '#f00'; ctx.shadowBlur = 8;
       ctx.beginPath();
@@ -68,14 +70,14 @@ export function render(ctx, state) {
       ctx.fill();
       ctx.shadowBlur = 0;
     } else if (obj.type === 'block') {
-      const bx = sx, by = toCanvasY(oy + oh);
+      const bx = sx, by = toCanvasY(oy + oh, sx);
       ctx.fillStyle = `rgb(${gnd[0] + 30},${gnd[1] + 30},${gnd[2] + 30})`;
       ctx.fillRect(bx, by, ow * UNIT, oh * UNIT);
       ctx.strokeStyle = `rgb(${Math.min(255, gnd[0] + 60)},${Math.min(255, gnd[1] + 60)},${Math.min(255, gnd[2] + 60)})`;
       ctx.lineWidth = 2;
       ctx.strokeRect(bx, by, ow * UNIT, oh * UNIT);
     } else if (obj.type === 'pad') {
-      const bx = sx, by = toCanvasY(oy);
+      const bx = sx, by = toCanvasY(oy, sx);
       ctx.fillStyle = '#ff0';
       ctx.shadowColor = '#ff0'; ctx.shadowBlur = 12;
       ctx.beginPath();
@@ -91,7 +93,7 @@ export function render(ctx, state) {
   // Player
   if (!player.dead) {
     const px = PLAYER_X * UNIT;
-    const py = toCanvasY(player.y + PLAYER_SIZE);
+    const py = toCanvasY(player.y + PLAYER_SIZE, px);
     const ps = PLAYER_SIZE * UNIT;
 
     ctx.save();
@@ -111,7 +113,7 @@ export function render(ctx, state) {
     if (!player.grounded) {
       ctx.fillStyle = 'rgba(0,0,0,0.2)';
       ctx.beginPath();
-      ctx.ellipse(px + ps / 2, GROUND_Y, ps / 2, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(px + ps / 2, groundAtX(px + ps / 2), ps / 2, 4, 0, 0, Math.PI * 2);
       ctx.fill();
     }
   }
