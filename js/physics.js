@@ -94,11 +94,15 @@ export function collide(player, objects, scrollX) {
     }
 
     if (obj.type === 'block') {
-      const prevBottom = py + ps;
-      if (player.vy > 0 && prevBottom >= oy + oh - 4) {
+      // Coming from above — land on top
+      if (player.vy > 0 && py + ps - player.vy * 0.02 >= oy + oh) {
         player.y = (oy + oh) / UNIT;
         player.vy = 0;
         player.grounded = true;
+      } else {
+        // Side or bottom hit — death
+        player.dead = true;
+        return true;
       }
     }
 

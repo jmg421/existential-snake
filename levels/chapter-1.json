@@ -13,62 +13,50 @@
     { "beat": 24, "type": "spike" },
     { "beat": 32, "type": "spike" },
 
-    { "beat": 40, "type": "spike" },
-    { "beat": 44, "type": "spike" },
+    { "beat": 42, "type": "spike" },
+    { "beat": 48, "type": "spike" },
+    { "beat": 54, "type": "spike" },
 
-    { "beat": 52, "type": "spike" },
-    { "beat": 56, "type": "spike" },
-    { "beat": 60, "type": "spike" },
-
-    { "beat": 68, "type": "block", "h": 1 },
-    { "beat": 72, "type": "spike" },
-    { "beat": 76, "type": "spike" },
+    { "beat": 64, "type": "block", "h": 1 },
+    { "beat": 74, "type": "spike" },
 
     { "beat": 84, "type": "spike" },
-    { "beat": 86, "type": "spike" },
+    { "beat": 90, "type": "spike" },
 
-    { "beat": 92, "type": "block", "h": 1 },
-    { "beat": 94, "type": "spike", "y": 1 },
+    { "beat": 100, "type": "block", "h": 1 },
+    { "beat": 102, "type": "spike", "y": 1 },
 
-    { "beat": 100, "type": "spike" },
-    { "beat": 102, "type": "spike" },
-    { "beat": 104, "type": "spike" },
-
-    { "beat": 112, "type": "block", "h": 1 },
-    { "beat": 113, "type": "block", "h": 1 },
-    { "beat": 114, "type": "spike", "y": 1 },
-
+    { "beat": 112, "type": "spike" },
+    { "beat": 116, "type": "spike" },
     { "beat": 120, "type": "spike" },
-    { "beat": 122, "type": "spike" },
-    { "beat": 124, "type": "spike" },
-    { "beat": 126, "type": "spike" },
 
-    { "beat": 134, "type": "block", "h": 2 },
-    { "beat": 136, "type": "spike", "y": 2 },
+    { "beat": 130, "type": "block", "h": 1 },
+    { "beat": 132, "type": "block", "h": 2 },
 
     { "beat": 142, "type": "spike" },
-    { "beat": 143, "type": "spike" },
-    { "beat": 144, "type": "spike" },
+    { "beat": 146, "type": "spike" },
+    { "beat": 150, "type": "spike" },
+    { "beat": 154, "type": "spike" },
 
-    { "beat": 152, "type": "pad" },
-    { "beat": 156, "type": "spike" },
-    { "beat": 158, "type": "spike" },
-
-    { "beat": 164, "type": "block", "h": 1 },
-    { "beat": 166, "type": "spike", "y": 1 },
-    { "beat": 168, "type": "spike" },
-
+    { "beat": 164, "type": "pad" },
+    { "beat": 172, "type": "spike" },
     { "beat": 176, "type": "spike" },
-    { "beat": 177, "type": "spike" },
-    { "beat": 178, "type": "spike" },
-    { "beat": 179, "type": "spike" }
+
+    { "beat": 186, "type": "block", "h": 1 },
+    { "beat": 188, "type": "spike", "y": 1 },
+    { "beat": 194, "type": "spike" },
+
+    { "beat": 204, "type": "spike" },
+    { "beat": 207, "type": "spike" },
+    { "beat": 210, "type": "spike" },
+    { "beat": 213, "type": "spike" }
   ],
   "triggers": [
     { "beat": 0, "type": "color", "bg": [10, 0, 30], "ground": [40, 0, 80] },
-    { "beat": 64, "type": "color", "bg": [30, 0, 10], "ground": [80, 20, 40] },
     { "beat": 64, "type": "flash" },
-    { "beat": 128, "type": "color", "bg": [5, 15, 30], "ground": [20, 50, 80] },
-    { "beat": 128, "type": "flash" },
-    { "beat": 160, "type": "color", "bg": [30, 5, 5], "ground": [80, 20, 20] }
+    { "beat": 64, "type": "color", "bg": [30, 0, 10], "ground": [80, 20, 40] },
+    { "beat": 130, "type": "flash" },
+    { "beat": 130, "type": "color", "bg": [5, 15, 30], "ground": [20, 50, 80] },
+    { "beat": 186, "type": "color", "bg": [30, 5, 5], "ground": [80, 20, 20] }
   ]
 }
