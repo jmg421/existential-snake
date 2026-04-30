@@ -18,7 +18,8 @@ let targetGnd = gnd;
 let started = false;
 let checkpoint = 0;      // best 5% increment reached (0.0, 0.05, 0.10, ...)
 let won = false;
-
+let checkpointMsg = '';
+let checkpointMsgTimer = 0;
 // Precomputed world-x positions for all objects
 let worldObjects = [];
 
@@ -142,8 +143,17 @@ function frame(now) {
   const songPct = st / duration();
 
   // Track checkpoint at every 5%
-  const pctFloor = Math.floor(songPct * 20) / 20; // 0.00, 0.05, 0.10, ...
-  if (pctFloor > checkpoint) checkpoint = pctFloor;
+  const pctFloor = Math.floor(songPct * 20) / 20;
+  if (pctFloor > checkpoint) {
+    checkpoint = pctFloor;
+    checkpointMsg = `${Math.round(checkpoint * 100)}%`;
+    checkpointMsgTimer = 1.2;
+    flash = 0.15;
+    flashColor = null;
+  }
+
+  // Checkpoint message decay
+  if (checkpointMsgTimer > 0) checkpointMsgTimer -= dt;
 
   // Level complete
   if (songPct >= 1 && !won) {
@@ -183,7 +193,7 @@ function buildState() {
     shake: shake > 0.5 ? shake : 0,
     attempts,
     songPct: started ? songTime() / duration() : 0,
-    bg, gnd, checkpoint, won,
+    bg, gnd, checkpoint, won, checkpointMsg, checkpointMsgTimer,
   };
 }
 

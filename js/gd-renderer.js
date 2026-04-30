@@ -141,6 +141,21 @@ export function render(ctx, state) {
   ctx.textAlign = 'left';
   ctx.fillText(`${Math.floor(songPct * 100)}%`, 20, 36);
 
+  // Checkpoint flash message
+  if (state.checkpointMsgTimer > 0) {
+    const a = Math.min(1, state.checkpointMsgTimer / 0.4);
+    const scale = 1 + (1 - a) * 0.3;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.font = `bold ${Math.floor(36 * scale)}px monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#0f0';
+    ctx.shadowColor = '#0f0'; ctx.shadowBlur = 20;
+    ctx.fillText(state.checkpointMsg, cw / 2, ch / 2);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+  }
+
   // Win screen
   if (state.won) {
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
