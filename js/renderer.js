@@ -53,7 +53,16 @@ export function render(ctx, state) {
     ctx.shadowColor = upsideDown ? 'hsl(280,80%,50%)' : `hsl(${snakeHue},100%,50%)`; ctx.shadowBlur = i === 0 ? 20 : 8;
     const wb = score > 15 ? Math.sin(Date.now() / 200 + i) * 2 : 0;
     const wby = score > 15 ? Math.cos(Date.now() / 200 + i) * 2 : 0;
-    ctx.fillRect(s.x * G + 1 + wb, s.y * G + 1 + wby, G - 2, G - 2);
+    // Squash & stretch on head
+    if (i === 0 && state.squash !== undefined) {
+      const sq = state.squash || 1, st = state.stretch || 1;
+      const cx = s.x * G + G / 2 + wb, cy = s.y * G + G / 2 + wby;
+      ctx.save(); ctx.translate(cx, cy); ctx.scale(sq, st); ctx.translate(-cx, -cy);
+      ctx.fillRect(s.x * G + 1 + wb, s.y * G + 1 + wby, G - 2, G - 2);
+      ctx.restore();
+    } else {
+      ctx.fillRect(s.x * G + 1 + wb, s.y * G + 1 + wby, G - 2, G - 2);
+    }
     if (i === 0) {
       ctx.fillStyle = upsideDown ? '#a0f' : '#000'; ctx.shadowBlur = 0;
       const ex = dir.x * 3, ey = dir.y * 3, eyeSize = Math.min(5, 3 + score / 15);
@@ -76,21 +85,24 @@ export function render(ctx, state) {
 
   // Food
   const pulse = Math.sin(Date.now() / 150) * 5;
+  // Anticipation: pulse harder when snake head is close
+  const headDist = food ? Math.abs(snake[0].x - food.x) + Math.abs(snake[0].y - food.y) : 99;
+  const anticipation = headDist < 5 ? (5 - headDist) * 2 : 0;
   if (mysteryFood) {
     // Rainbow shimmer mystery food
     const mh = (Date.now() / 5) % 360;
-    ctx.fillStyle = `hsl(${mh},100%,70%)`; ctx.shadowColor = `hsl(${mh},100%,60%)`; ctx.shadowBlur = 25 + pulse;
-    ctx.beginPath(); ctx.arc(food.x * G + G / 2, food.y * G + G / 2, G / 2 + pulse / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = `hsl(${mh},100%,70%)`; ctx.shadowColor = `hsl(${mh},100%,60%)`; ctx.shadowBlur = 25 + pulse + anticipation;
+    ctx.beginPath(); ctx.arc(food.x * G + G / 2, food.y * G + G / 2, G / 2 + pulse / 2 + anticipation, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#fff'; ctx.font = '12px sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('?', food.x * G + G / 2, food.y * G + G / 2 + 4);
   } else if (demogorgonFood) {
-    ctx.fillStyle = upsideDown ? '#f0f' : '#f8f'; ctx.shadowColor = upsideDown ? '#a0f' : '#f0f'; ctx.shadowBlur = 20 + pulse;
+    ctx.fillStyle = upsideDown ? '#f0f' : '#f8f'; ctx.shadowColor = upsideDown ? '#a0f' : '#f0f'; ctx.shadowBlur = 20 + pulse + anticipation;
     for (let p = 0; p < 5; p++) { const a = p * Math.PI * 2 / 5 + Date.now() / 500; ctx.beginPath(); ctx.arc(food.x * G + G / 2 + Math.cos(a) * (6 + pulse / 2), food.y * G + G / 2 + Math.sin(a) * (6 + pulse / 2), 4, 0, Math.PI * 2); ctx.fill(); }
     ctx.beginPath(); ctx.arc(food.x * G + G / 2, food.y * G + G / 2, 4, 0, Math.PI * 2); ctx.fill();
   } else {
     const fh = upsideDown ? 0 : (hue + 180) % 360;
-    ctx.fillStyle = `hsl(${fh},100%,65%)`; ctx.shadowColor = `hsl(${fh},100%,60%)`; ctx.shadowBlur = 20 + pulse;
-    ctx.beginPath(); ctx.arc(food.x * G + G / 2, food.y * G + G / 2, G / 2 - 1 + pulse / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = `hsl(${fh},100%,65%)`; ctx.shadowColor = `hsl(${fh},100%,60%)`; ctx.shadowBlur = 20 + pulse + anticipation;
+    ctx.beginPath(); ctx.arc(food.x * G + G / 2, food.y * G + G / 2, G / 2 - 1 + pulse / 2 + anticipation, 0, Math.PI * 2); ctx.fill();
   }
   ctx.shadowBlur = 0;
 
@@ -106,6 +118,19 @@ export function render(ctx, state) {
 
   // Random flicker
   if (upsideDown && Math.random() < .02) { ctx.fillStyle = `rgba(160,0,255,${Math.random() * .1})`; ctx.fillRect(0, 0, cw, ch); }
+
+  // Impact flash
+  if (state.flashType) {
+    const t = state.flashTimer || 0;
+    if (state.flashType === 'collect') {
+      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.35, t / 8)})`;
+      ctx.fillRect(0, 0, cw, ch);
+    } else if (state.flashType === 'death') {
+      const a = Math.min(0.6, t / 5);
+      ctx.fillStyle = `rgba(255,0,0,${a})`;
+      ctx.fillRect(0, 0, cw, ch);
+    }
+  }
 
   ctx.restore();
   if (score > 10) { const d = Math.sin(Date.now() / 500) * (upsideDown ? 4 : 2); state.canvas.style.transform = `skew(${d * .3}deg,${d * .2}deg)`; }

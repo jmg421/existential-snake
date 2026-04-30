@@ -169,6 +169,22 @@ export function renderRunner(ctx, state) {
   ctx.setLineDash([]);
   ctx.lineWidth = 1;
 
+  // Speed lines — intensity scales with scroll speed
+  const speedPct = Math.min(1, scrollSpeed / (state.level.maxSpeed || 6));
+  if (speedPct > 0.2) {
+    const lineCount = Math.floor(speedPct * 18);
+    const alpha = speedPct * 0.35;
+    ctx.strokeStyle = upsideDown ? `rgba(160,0,255,${alpha})` : `rgba(255,255,255,${alpha})`;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < lineCount; i++) {
+      const ly = ((elapsed * 0.07 + i * 137.5) % ch);
+      const len = 40 + speedPct * 80;
+      const lx = ((elapsed * scrollSpeed * 0.3 + i * 97) % (cw + len)) - len;
+      ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + len, ly); ctx.stroke();
+    }
+    ctx.lineWidth = 1;
+  }
+
   // Upside down vines
   if (upsideDown) {
     for (let i = 0; i < 6; i++) {
@@ -266,6 +282,14 @@ export function renderRunner(ctx, state) {
     ctx.shadowColor = `hsl(${playerHue},100%,60%)`;
     ctx.shadowBlur = shield ? 25 : 15;
 
+    // Squash & stretch
+    const sq = state.squash || 1, st = state.stretch || 1;
+    const pcx = pxAdj + pw / 2, pcy = pyAdj + ph / 2;
+    ctx.save();
+    ctx.translate(pcx, pcy);
+    ctx.scale(sq, st);
+    ctx.translate(-pcx, -pcy);
+
     // Player body
     ctx.fillStyle = `hsl(${playerHue},80%,${upsideDown ? 60 : 70}%)`;
     ctx.beginPath();
@@ -291,6 +315,7 @@ export function renderRunner(ctx, state) {
       ctx.stroke();
       ctx.lineWidth = 1;
     }
+    ctx.restore(); // end squash/stretch
   }
 
   // Jump shadow on ground
@@ -337,10 +362,27 @@ export function renderRunner(ctx, state) {
   ctx.fillStyle = upsideDown ? '#a0f' : `hsl(${hue},100%,60%)`;
   ctx.fillRect(cw - 160, 10, 150 * pct, 8);
 
-  // Death flash
-  if (!alive) {
-    ctx.fillStyle = 'rgba(255,0,0,0.3)';
-    ctx.fillRect(0, 0, cw, ch);
+  // Impact flash overlay
+  if (state.flashType) {
+    const t = state.flashTimer || 0;
+    if (state.flashType === 'collect') {
+      ctx.fillStyle = `rgba(255,255,255,${Math.min(0.4, t / 100)})`;
+      ctx.fillRect(0, 0, cw, ch);
+    } else if (state.flashType === 'hit') {
+      ctx.fillStyle = `rgba(255,0,0,${Math.min(0.5, t / 100)})`;
+      ctx.fillRect(0, 0, cw, ch);
+    } else if (state.flashType === 'death') {
+      const a = Math.min(0.6, t / 200);
+      ctx.fillStyle = `rgba(255,0,0,${a})`;
+      ctx.fillRect(0, 0, cw, ch);
+      // Chromatic aberration on death
+      ctx.globalCompositeOperation = 'screen';
+      ctx.fillStyle = `rgba(255,0,0,${a * 0.3})`;
+      ctx.fillRect(-3, 0, cw, ch);
+      ctx.fillStyle = `rgba(0,0,255,${a * 0.3})`;
+      ctx.fillRect(3, 0, cw, ch);
+      ctx.globalCompositeOperation = 'source-over';
+    }
   }
 
   // Level complete flash

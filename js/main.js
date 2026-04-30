@@ -34,6 +34,12 @@ const state = {
   speedMs: SPEED_INITIAL,
   upsideDown: false,
   demogorgonFood: false,
+  // Juice
+  hitFreeze: 0,
+  flashType: null,
+  flashTimer: 0,
+  squash: 1,
+  stretch: 1,
   canvas, W, H
 };
 
@@ -84,18 +90,31 @@ function die() {
   state.alive = false;
   clearInterval(tick);
   stopBgTrack();
-  dieSound();
-  const prev = parseInt(localStorage.getItem('skibidi-highscore') || '0');
-  const isNew = state.score > prev;
-  if (isNew) localStorage.setItem('skibidi-highscore', state.score);
-  // Refresh skin picker — may have unlocked new skins
-  setupSkinPicker();
-  // Near-miss on streak
-  if (state.streak >= 7 && state.streak < 10) {
-    document.getElementById('thought').textContent = `😱 ${state.streak}/10 STREAK... SO CLOSE TO THE BONUS`;
-  }
-  showGameOver(state.score, prev, isNew);
-  canvas.style.filter = 'hue-rotate(180deg) saturate(3) brightness(0.5)';
+  // Death slow-mo: flash + delay before game-over
+  state.flashType = 'death'; state.flashTimer = 8;
+  state.screenShake = 25;
+  render(ctx, state);
+  // Slow-mo death render for 300ms
+  let deathFrames = 0;
+  const deathAnim = setInterval(() => {
+    state.screenShake *= 0.85;
+    state.flashTimer = Math.max(0, state.flashTimer - 0.3);
+    if (state.flashTimer <= 0) state.flashType = null;
+    render(ctx, state);
+    if (++deathFrames > 18) {
+      clearInterval(deathAnim);
+      dieSound();
+      const prev = parseInt(localStorage.getItem('skibidi-highscore') || '0');
+      const isNew = state.score > prev;
+      if (isNew) localStorage.setItem('skibidi-highscore', state.score);
+      setupSkinPicker();
+      if (state.streak >= 7 && state.streak < 10) {
+        document.getElementById('thought').textContent = `😱 ${state.streak}/10 STREAK... SO CLOSE TO THE BONUS`;
+      }
+      showGameOver(state.score, prev, isNew);
+      canvas.style.filter = 'hue-rotate(180deg) saturate(3) brightness(0.5)';
+    }
+  }, 16);
 }
 
 function step() {
@@ -115,6 +134,11 @@ function step() {
       setTimeout(() => { revealEl.textContent = `🎰 +${points} AURA 🎰`; popEmoji(points > 5 ? 8 : 3); if (points >= 10) popText(state.upsideDown); }, 300);
     }
     state.score += points;
+
+    // Juice
+    state.hitFreeze = 3; // 3 ticks of freeze
+    state.flashType = 'collect'; state.flashTimer = 4;
+    state.squash = 1.5; state.stretch = 0.6;
 
     // Streak tracking
     state.streak = (state.streak || 0) + 1;
@@ -154,7 +178,15 @@ function step() {
 }
 
 function loop() {
-  if (state.alive) { step(); state.hue = (state.hue + .7) % 360; if (state.screenShake > 0) state.screenShake *= .85; render(ctx, state); }
+  if (state.alive) {
+    // Hit freeze — skip game logic but still render
+    if (state.hitFreeze > 0) { state.hitFreeze--; render(ctx, state); return; }
+    // Flash/squash decay
+    if (state.flashTimer > 0) { state.flashTimer--; if (state.flashTimer <= 0) state.flashType = null; }
+    state.squash += (1 - state.squash) * 0.2;
+    state.stretch += (1 - state.stretch) * 0.2;
+    step(); state.hue = (state.hue + .7) % 360; if (state.screenShake > 0) state.screenShake *= .85; render(ctx, state);
+  }
 }
 
 function renderFrame() {
@@ -218,6 +250,11 @@ window.restartGame = function() {
   state.demogorgonFood = false;
   state.mysteryFood = false;
   state.streak = 0;
+  state.hitFreeze = 0;
+  state.flashType = null;
+  state.flashTimer = 0;
+  state.squash = 1;
+  state.stretch = 1;
   spawn();
   document.getElementById('gameover').style.display = 'none';
   document.getElementById('vecna').style.opacity = '0';

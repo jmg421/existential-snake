@@ -56,6 +56,15 @@ export function createState(level) {
     screenShake: 0,
     hue: 0,
 
+    // Juice
+    hitFreeze: 0,       // ms remaining of freeze
+    slowMo: 0,          // ms remaining of slow-motion
+    slowMoScale: 1,     // time scale during slow-mo
+    flashType: null,     // 'collect' | 'hit' | 'death' — triggers overlay in renderer
+    flashTimer: 0,       // ms remaining
+    squash: 1,           // player X scale (>1 = wide, <1 = narrow)
+    stretch: 1,          // player Y scale
+
     // Level ref
     level,
     duration: level.duration,
@@ -65,6 +74,19 @@ export function createState(level) {
 
 export function update(state, dt) {
   if (!state.alive || !state.started || state.complete) return;
+
+  // Hit freeze — pause everything
+  if (state.hitFreeze > 0) { state.hitFreeze -= dt; return; }
+
+  // Slow-mo — scale dt
+  if (state.slowMo > 0) { state.slowMo -= dt; dt *= state.slowMoScale; }
+
+  // Flash timer decay
+  if (state.flashTimer > 0) { state.flashTimer -= dt; if (state.flashTimer <= 0) state.flashType = null; }
+
+  // Squash & stretch decay toward 1
+  state.squash += (1 - state.squash) * 0.15;
+  state.stretch += (1 - state.stretch) * 0.15;
 
   state.elapsed += dt;
   state.hue = (state.hue + 0.5) % 360;
@@ -80,7 +102,7 @@ export function update(state, dt) {
   if (state.jumping) {
     state.jumpT += dt;
     const jDur = state.jumpDuration || 400;
-    if (state.jumpT > jDur) { state.jumping = false; state.jumpT = 0; }
+    if (state.jumpT > jDur) { state.jumping = false; state.jumpT = 0; state.squash = 1.3; state.stretch = 0.7; }
   }
 
   // Invincibility timer
@@ -163,10 +185,14 @@ export function update(state, dt) {
           state.invincible = true;
           state.invincibleTimer = 2000;
           state.screenShake = 15;
+          state.hitFreeze = 80;
+          state.flashType = 'hit'; state.flashTimer = 120;
           log(`HIT by ${obj.subtype} lane=${obj.lane} lives=${state.lives}`);
           if (state.lives <= 0) {
             state.alive = false;
             state.screenShake = 20;
+            state.slowMo = 400; state.slowMoScale = 0.15;
+            state.flashType = 'death'; state.flashTimer = 400;
             log('DEAD — no lives remaining');
             emit('death');
           } else {
@@ -176,6 +202,9 @@ export function update(state, dt) {
       } else if (obj.type === 'collectible') {
         obj.active = false;
         emit('collect', obj.subtype);
+        state.hitFreeze = 40;
+        state.flashType = 'collect'; state.flashTimer = 60;
+        state.squash = 1.4; state.stretch = 0.7;
         if (obj.subtype === 'heart') {
           if (state.lives < state.maxLives) { state.lives++; log(`heart pickup lives=${state.lives}`); }
         } else {
@@ -272,7 +301,7 @@ export function switchLane(state, dir) {
 }
 
 export function jump(state) {
-  if (!state.jumping) { state.jumping = true; state.jumpT = 0; log('jump'); }
+  if (!state.jumping) { state.jumping = true; state.jumpT = 0; state.squash = 0.7; state.stretch = 1.4; log('jump'); }
 }
 
 export { CANVAS_W, CANVAS_H, LANE_H, PLAYER_X, PLAYER_W, PLAYER_H, OBJ_W, OBJ_H };
