@@ -179,7 +179,8 @@ export function render(ctx, state) {
     ctx.fillText('the upside down fears you now', cw / 2, ch / 2 + 55);
   }
 
-  ctx.restore();
-}
+  // Version
+  ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '10px monospace'; ctx.textAlign = 'right';
+  ctx.fillText(state.version || '', cw - 6, ch - 6);
 
-export { CW, CH, GROUND_Y };
+  ctx.restore();

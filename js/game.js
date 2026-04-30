@@ -3,6 +3,8 @@ import { initAudio, loadSong, play, stop, restart as restartSong, setSyncParams,
 import { UNIT, PLAYER_X, createPlayer, updatePlayer, jump, collide, checkFall, resetPlayer } from './physics.js';
 import { render, CW, CH } from './gd-renderer.js';
 
+const VERSION = 'b5f4014';
+
 let level = null;
 let player = createPlayer();
 let attempts = 1;
@@ -197,7 +199,7 @@ function buildState() {
     shake: shake > 0.5 ? shake : 0,
     attempts,
     songPct: started ? Math.min(1, beat() / levelEndBeat) : 0,
-    bg, gnd, checkpoint, won, checkpointMsg, checkpointMsgTimer,
+    bg, gnd, checkpoint, won, checkpointMsg, checkpointMsgTimer, version: VERSION,
   };
 }
 
