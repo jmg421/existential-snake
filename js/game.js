@@ -3,7 +3,7 @@ import { initAudio, loadSong, play, stop, restart as restartSong, setSyncParams,
 import { UNIT, PLAYER_X, createPlayer, updatePlayer, jump, collide, checkFall, resetPlayer } from './physics.js';
 import { render, CW, CH } from './gd-renderer.js';
 
-const VERSION = 'b5f4014';
+const VERSION = 'babac59';
 
 let level = null;
 let player = createPlayer();
