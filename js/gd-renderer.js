@@ -141,6 +141,20 @@ export function render(ctx, state) {
   ctx.textAlign = 'left';
   ctx.fillText(`${Math.floor(songPct * 100)}%`, 20, 36);
 
+  // Win screen
+  if (state.won) {
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fillRect(0, 0, cw, ch);
+    ctx.fillStyle = '#0f0'; ctx.font = 'bold 48px monospace'; ctx.textAlign = 'center';
+    ctx.shadowColor = '#0f0'; ctx.shadowBlur = 20;
+    ctx.fillText('LEVEL COMPLETE', cw / 2, ch / 2 - 30);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#fff'; ctx.font = 'bold 20px monospace';
+    ctx.fillText(`${state.attempts} attempts`, cw / 2, ch / 2 + 20);
+    ctx.fillStyle = '#888'; ctx.font = '14px monospace';
+    ctx.fillText('the upside down fears you now', cw / 2, ch / 2 + 55);
+  }
+
   ctx.restore();
 }
 

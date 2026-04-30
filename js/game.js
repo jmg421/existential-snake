@@ -17,6 +17,7 @@ let targetBg = bg;
 let targetGnd = gnd;
 let started = false;
 let checkpoint = 0;      // best 5% increment reached (0.0, 0.05, 0.10, ...)
+let won = false;
 
 // Precomputed world-x positions for all objects
 let worldObjects = [];
@@ -145,12 +146,12 @@ function frame(now) {
   if (pctFloor > checkpoint) checkpoint = pctFloor;
 
   // Level complete
-  if (songPct >= 1) {
-    // TODO: victory screen
-    started = false;
+  if (songPct >= 1 && !won) {
+    won = true;
     stop();
     return;
   }
+  if (won) return;
 
   // Physics
   updatePlayer(player, dt);
@@ -182,7 +183,7 @@ function buildState() {
     shake: shake > 0.5 ? shake : 0,
     attempts,
     songPct: started ? songTime() / duration() : 0,
-    bg, gnd, checkpoint,
+    bg, gnd, checkpoint, won,
   };
 }
 
