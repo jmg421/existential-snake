@@ -8,84 +8,67 @@
     "speed": 8
   },
   "objects": [
-    { "beat": 4, "type": "spike" },
     { "beat": 8, "type": "spike" },
-    { "beat": 10, "type": "spike" },
+    { "beat": 16, "type": "spike" },
+    { "beat": 24, "type": "spike" },
+    { "beat": 32, "type": "spike" },
 
-    { "beat": 14, "type": "block", "h": 1 },
-    { "beat": 15, "type": "spike", "y": 1 },
+    { "beat": 40, "type": "spike" },
+    { "beat": 44, "type": "spike" },
 
-    { "beat": 18, "type": "spike" },
-    { "beat": 19, "type": "spike" },
+    { "beat": 52, "type": "spike" },
+    { "beat": 56, "type": "spike" },
+    { "beat": 60, "type": "spike" },
 
-    { "beat": 22, "type": "block", "h": 1 },
-    { "beat": 23, "type": "block", "h": 1 },
-    { "beat": 24, "type": "spike", "y": 1 },
+    { "beat": 68, "type": "block", "h": 1 },
+    { "beat": 72, "type": "spike" },
+    { "beat": 76, "type": "spike" },
 
-    { "beat": 28, "type": "spike" },
-    { "beat": 29, "type": "spike" },
-    { "beat": 30, "type": "spike" },
-
-    { "beat": 34, "type": "block", "h": 2 },
-    { "beat": 35, "type": "spike", "y": 2 },
-
-    { "beat": 38, "type": "spike" },
-    { "beat": 39, "type": "block", "h": 1 },
-    { "beat": 40, "type": "spike", "y": 1 },
-    { "beat": 41, "type": "spike" },
-
-    { "beat": 44, "type": "block", "h": 1 },
-    { "beat": 45, "type": "block", "h": 1 },
-    { "beat": 46, "type": "block", "h": 1 },
-    { "beat": 47, "type": "spike", "y": 1 },
-
-    { "beat": 50, "type": "spike" },
-    { "beat": 51, "type": "spike" },
-    { "beat": 52, "type": "block", "h": 1 },
-    { "beat": 53, "type": "spike", "y": 1 },
-    { "beat": 54, "type": "spike" },
-
-    { "beat": 58, "type": "block", "h": 1 },
-    { "beat": 59, "type": "block", "h": 2 },
-    { "beat": 60, "type": "spike", "y": 2 },
-    { "beat": 61, "type": "spike" },
-    { "beat": 62, "type": "spike" },
-
-    { "beat": 66, "type": "spike" },
-    { "beat": 67, "type": "spike" },
-    { "beat": 68, "type": "spike" },
-    { "beat": 69, "type": "spike" },
-
-    { "beat": 72, "type": "block", "h": 1 },
-    { "beat": 73, "type": "block", "h": 2 },
-    { "beat": 74, "type": "block", "h": 3 },
-    { "beat": 75, "type": "spike", "y": 3 },
-
-    { "beat": 78, "type": "spike" },
-    { "beat": 79, "type": "spike" },
-    { "beat": 80, "type": "spike" },
-
-    { "beat": 84, "type": "pad" },
+    { "beat": 84, "type": "spike" },
     { "beat": 86, "type": "spike" },
-    { "beat": 87, "type": "spike" },
-    { "beat": 88, "type": "spike" },
 
     { "beat": 92, "type": "block", "h": 1 },
-    { "beat": 93, "type": "spike", "y": 1 },
-    { "beat": 94, "type": "block", "h": 2 },
-    { "beat": 95, "type": "spike", "y": 2 },
+    { "beat": 94, "type": "spike", "y": 1 },
 
-    { "beat": 98, "type": "spike" },
-    { "beat": 98.5, "type": "spike" },
-    { "beat": 99, "type": "spike" },
-    { "beat": 99.5, "type": "spike" }
+    { "beat": 100, "type": "spike" },
+    { "beat": 102, "type": "spike" },
+    { "beat": 104, "type": "spike" },
+
+    { "beat": 112, "type": "block", "h": 1 },
+    { "beat": 113, "type": "block", "h": 1 },
+    { "beat": 114, "type": "spike", "y": 1 },
+
+    { "beat": 120, "type": "spike" },
+    { "beat": 122, "type": "spike" },
+    { "beat": 124, "type": "spike" },
+    { "beat": 126, "type": "spike" },
+
+    { "beat": 134, "type": "block", "h": 2 },
+    { "beat": 136, "type": "spike", "y": 2 },
+
+    { "beat": 142, "type": "spike" },
+    { "beat": 143, "type": "spike" },
+    { "beat": 144, "type": "spike" },
+
+    { "beat": 152, "type": "pad" },
+    { "beat": 156, "type": "spike" },
+    { "beat": 158, "type": "spike" },
+
+    { "beat": 164, "type": "block", "h": 1 },
+    { "beat": 166, "type": "spike", "y": 1 },
+    { "beat": 168, "type": "spike" },
+
+    { "beat": 176, "type": "spike" },
+    { "beat": 177, "type": "spike" },
+    { "beat": 178, "type": "spike" },
+    { "beat": 179, "type": "spike" }
   ],
   "triggers": [
     { "beat": 0, "type": "color", "bg": [10, 0, 30], "ground": [40, 0, 80] },
-    { "beat": 32, "type": "color", "bg": [30, 0, 10], "ground": [80, 20, 40] },
-    { "beat": 64, "type": "color", "bg": [5, 15, 30], "ground": [20, 50, 80] },
+    { "beat": 64, "type": "color", "bg": [30, 0, 10], "ground": [80, 20, 40] },
     { "beat": 64, "type": "flash" },
-    { "beat": 96, "type": "color", "bg": [30, 5, 5], "ground": [80, 20, 20] },
-    { "beat": 96, "type": "flash" }
+    { "beat": 128, "type": "color", "bg": [5, 15, 30], "ground": [20, 50, 80] },
+    { "beat": 128, "type": "flash" },
+    { "beat": 160, "type": "color", "bg": [30, 5, 5], "ground": [80, 20, 20] }
   ]
 }
