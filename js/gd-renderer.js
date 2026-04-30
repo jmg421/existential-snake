@@ -26,12 +26,19 @@ export function render(ctx, state) {
   ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
   ctx.fillRect(0, 0, cw, ch);
 
-  // Ground
+  // Ground — angled uphill
+  const SLOPE = 0.06; // rise per pixel across the canvas
   ctx.fillStyle = `rgb(${gnd[0]},${gnd[1]},${gnd[2]})`;
-  ctx.fillRect(0, GROUND_Y, cw, ch - GROUND_Y);
+  ctx.beginPath();
+  ctx.moveTo(0, GROUND_Y + cw * SLOPE);
+  ctx.lineTo(cw, GROUND_Y);
+  ctx.lineTo(cw, ch);
+  ctx.lineTo(0, ch);
+  ctx.closePath();
+  ctx.fill();
   ctx.strokeStyle = `rgb(${Math.min(255, gnd[0] + 40)},${Math.min(255, gnd[1] + 40)},${Math.min(255, gnd[2] + 40)})`;
   ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(0, GROUND_Y); ctx.lineTo(cw, GROUND_Y); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0, GROUND_Y + cw * SLOPE); ctx.lineTo(cw, GROUND_Y); ctx.stroke();
 
   // Grid lines on ground (scrolling)
   ctx.strokeStyle = `rgba(255,255,255,0.05)`;
