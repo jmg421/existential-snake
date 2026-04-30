@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "name": "Chapter 1: Hawkins Lab",
+    "author": "skibidi-things",
+    "song": "audio/stereo-madness.mp3",
+    "bpm": 143,
+    "offset": 0.1,
+    "speed": 8
+  },
+  "objects": [
+    { "beat": 4, "type": "spike" },
+    { "beat": 8, "type": "spike" },
+    { "beat": 10, "type": "spike" },
+
+    { "beat": 14, "type": "block", "h": 1 },
+    { "beat": 15, "type": "spike", "y": 1 },
+
+    { "beat": 18, "type": "spike" },
+    { "beat": 19, "type": "spike" },
+
+    { "beat": 22, "type": "block", "h": 1 },
+    { "beat": 23, "type": "block", "h": 1 },
+    { "beat": 24, "type": "spike", "y": 1 },
+
+    { "beat": 28, "type": "spike" },
+    { "beat": 29, "type": "spike" },
+    { "beat": 30, "type": "spike" },
+
+    { "beat": 34, "type": "block", "h": 2 },
+    { "beat": 35, "type": "spike", "y": 2 },
+
+    { "beat": 38, "type": "spike" },
+    { "beat": 39, "type": "block", "h": 1 },
+    { "beat": 40, "type": "spike", "y": 1 },
+    { "beat": 41, "type": "spike" },
+
+    { "beat": 44, "type": "block", "h": 1 },
+    { "beat": 45, "type": "block", "h": 1 },
+    { "beat": 46, "type": "block", "h": 1 },
+    { "beat": 47, "type": "spike", "y": 1 },
+
+    { "beat": 50, "type": "spike" },
+    { "beat": 51, "type": "spike" },
+    { "beat": 52, "type": "block", "h": 1 },
+    { "beat": 53, "type": "spike", "y": 1 },
+    { "beat": 54, "type": "spike" },
+
+    { "beat": 58, "type": "block", "h": 1 },
+    { "beat": 59, "type": "block", "h": 2 },
+    { "beat": 60, "type": "spike", "y": 2 },
+    { "beat": 61, "type": "spike" },
+    { "beat": 62, "type": "spike" },
+
+    { "beat": 66, "type": "spike" },
+    { "beat": 67, "type": "spike" },
+    { "beat": 68, "type": "spike" },
+    { "beat": 69, "type": "spike" },
+
+    { "beat": 72, "type": "block", "h": 1 },
+    { "beat": 73, "type": "block", "h": 2 },
+    { "beat": 74, "type": "block", "h": 3 },
+    { "beat": 75, "type": "spike", "y": 3 },
+
+    { "beat": 78, "type": "spike" },
+    { "beat": 79, "type": "spike" },
+    { "beat": 80, "type": "spike" },
+
+    { "beat": 84, "type": "pad" },
+    { "beat": 86, "type": "spike" },
+    { "beat": 87, "type": "spike" },
+    { "beat": 88, "type": "spike" },
+
+    { "beat": 92, "type": "block", "h": 1 },
+    { "beat": 93, "type": "spike", "y": 1 },
+    { "beat": 94, "type": "block", "h": 2 },
+    { "beat": 95, "type": "spike", "y": 2 },
+
+    { "beat": 98, "type": "spike" },
+    { "beat": 98.5, "type": "spike" },
+    { "beat": 99, "type": "spike" },
+    { "beat": 99.5, "type": "spike" }
+  ],
+  "triggers": [
+    { "beat": 0, "type": "color", "bg": [10, 0, 30], "ground": [40, 0, 80] },
+    { "beat": 32, "type": "color", "bg": [30, 0, 10], "ground": [80, 20, 40] },
+    { "beat": 64, "type": "color", "bg": [5, 15, 30], "ground": [20, 50, 80] },
+    { "beat": 64, "type": "flash" },
+    { "beat": 96, "type": "color", "bg": [30, 5, 5], "ground": [80, 20, 20] },
+    { "beat": 96, "type": "flash" }
+  ]
+}
