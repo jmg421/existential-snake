@@ -22,14 +22,15 @@ export async function loadSong(url) {
   return buffer.duration;
 }
 
-export function play() {
+export function play(fromSeconds) {
   if (!buffer || !ctx) return;
   stop();
   source = ctx.createBufferSource();
   source.buffer = buffer;
   source.connect(ctx.destination);
-  source.start(0);
-  startTime = ctx.currentTime - offset;
+  const from = fromSeconds || 0;
+  source.start(0, from);
+  startTime = ctx.currentTime - from - offset;
   playing = true;
 }
 
@@ -38,9 +39,9 @@ export function stop() {
   playing = false;
 }
 
-export function restart() {
+export function restart(fromSeconds) {
   stop();
-  play();
+  play(fromSeconds);
 }
 
 export function setSyncParams(b, o) {

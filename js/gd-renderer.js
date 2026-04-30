@@ -122,10 +122,16 @@ export function render(ctx, state) {
   }
 
   // Progress bar
+  const barX = 20, barW = cw - 40;
   ctx.fillStyle = 'rgba(255,255,255,0.15)';
-  ctx.fillRect(20, 12, cw - 40, 6);
+  ctx.fillRect(barX, 12, barW, 6);
+  // Checkpoint marker
+  if (state.checkpoint > 0) {
+    ctx.fillStyle = 'rgba(255,255,0,0.4)';
+    ctx.fillRect(barX, 12, barW * state.checkpoint, 6);
+  }
   ctx.fillStyle = '#0f0';
-  ctx.fillRect(20, 12, (cw - 40) * songPct, 6);
+  ctx.fillRect(barX, 12, barW * songPct, 6);
 
   // Attempt counter
   ctx.fillStyle = '#fff'; ctx.font = 'bold 14px monospace'; ctx.textAlign = 'right';

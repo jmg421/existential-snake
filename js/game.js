@@ -1,5 +1,5 @@
 // Game — main loop: beat clock → physics → collision → render → instant restart
-import { initAudio, loadSong, play, stop, restart as restartSong, setSyncParams, songTime, beat, duration, isPlaying, getBpm } from './beat-clock.js';
+import { initAudio, loadSong, play, stop, restart as restartSong, setSyncParams, songTime, beat, duration, totalBeats, isPlaying, getBpm } from './beat-clock.js';
 import { UNIT, PLAYER_X, createPlayer, updatePlayer, jump, collide, checkFall, resetPlayer } from './physics.js';
 import { render, CW, CH } from './gd-renderer.js';
 
@@ -16,6 +16,7 @@ let gnd = [40, 0, 80];
 let targetBg = bg;
 let targetGnd = gnd;
 let started = false;
+let checkpoint = 0;      // best 5% increment reached (0.0, 0.05, 0.10, ...)
 
 // Precomputed world-x positions for all objects
 let worldObjects = [];
@@ -92,11 +93,24 @@ function die() {
 
 function restartLevel() {
   resetPlayer(player);
+  // Find the right trigger index for checkpoint position
+  const checkpointTime = checkpoint * duration();
+  const checkpointBeat = checkpoint * totalBeats();
   lastTriggerIdx = 0;
+  if (level) {
+    // Advance trigger index past checkpoint, applying color triggers
+    for (let i = 0; i < level.triggers.length; i++) {
+      if (level.triggers[i].beat <= checkpointBeat) {
+        const t = level.triggers[i];
+        if (t.type === 'color') { bg = [...t.bg]; gnd = [...t.ground]; targetBg = [...t.bg]; targetGnd = [...t.ground]; }
+        lastTriggerIdx = i + 1;
+      }
+    }
+  }
   flash = 0;
   shake = 0;
   attempts++;
-  restartSong();
+  restartSong(checkpointTime);
 }
 
 // Main frame
@@ -125,6 +139,10 @@ function frame(now) {
   const pxPerBeat = level.meta.speed * UNIT;
   const scrollX = st * level.meta.speed * UNIT * getBpm() / 60;
   const songPct = st / duration();
+
+  // Track checkpoint at every 5%
+  const pctFloor = Math.floor(songPct * 20) / 20; // 0.00, 0.05, 0.10, ...
+  if (pctFloor > checkpoint) checkpoint = pctFloor;
 
   // Level complete
   if (songPct >= 1) {
@@ -164,7 +182,7 @@ function buildState() {
     shake: shake > 0.5 ? shake : 0,
     attempts,
     songPct: started ? songTime() / duration() : 0,
-    bg, gnd,
+    bg, gnd, checkpoint,
   };
 }
 
