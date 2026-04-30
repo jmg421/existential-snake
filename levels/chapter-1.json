@@ -12,15 +12,15 @@
 
     {"beat":10,"type":"block","h":1},
     {"beat":12,"type":"block","h":2},
-    {"beat":14,"type":"block","h":3},
+    {"beat":14,"type":"block","h":2},
 
     {"beat":20,"type":"spike"},
     {"beat":24,"type":"spike"},
 
     {"beat":30,"type":"block","h":1},
     {"beat":32,"type":"block","h":2},
-    {"beat":34,"type":"block","h":3},
-    {"beat":36,"type":"spike","y":3},
+    {"beat":34,"type":"block","h":2},
+    {"beat":36,"type":"spike","y":2},
 
     {"beat":42,"type":"spike"},
     {"beat":45,"type":"spike"},
@@ -81,8 +81,8 @@
 
     {"beat":212,"type":"block","h":1},
     {"beat":214,"type":"block","h":2},
-    {"beat":216,"type":"block","h":3},
-    {"beat":218,"type":"spike","y":3},
+    {"beat":216,"type":"block","h":2},
+    {"beat":218,"type":"spike","y":2},
 
     {"beat":226,"type":"spike"},
     {"beat":228,"type":"spike"},
@@ -115,7 +115,7 @@
 
     {"beat":310,"type":"block","h":1},
     {"beat":312,"type":"block","h":2},
-    {"beat":314,"type":"block","h":3},
+    {"beat":314,"type":"block","h":2},
 
     {"beat":322,"type":"spike"},
     {"beat":324,"type":"spike"},
@@ -150,8 +150,8 @@
 
     {"beat":406,"type":"block","h":1},
     {"beat":408,"type":"block","h":2},
-    {"beat":410,"type":"block","h":3},
-    {"beat":412,"type":"spike","y":3},
+    {"beat":410,"type":"block","h":2},
+    {"beat":412,"type":"spike","y":2},
 
     {"beat":420,"type":"spike"},
     {"beat":422,"type":"spike"},
