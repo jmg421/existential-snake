@@ -6,8 +6,7 @@ import { renderRunner } from './runner_renderer.js';
 import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, playEngine } from './audio.js';
 import { addParticles } from './particles.js';
 import { initInput } from './input.js';
-import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, showGameOver, setupSoundboard, setupSkinPicker, setupTheme, setupTrackPicker, stopActiveRSVP } from './ui.js';
-import { playRSVP } from './rsvp.js';
+import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, showGameOver, setupSoundboard, setupSkinPicker, setupTheme, setupTrackPicker } from './ui.js';
 
 const canvas = document.getElementById('c');
 canvas.width = CANVAS_W;
@@ -157,13 +156,9 @@ function checkTriggers(s) {
     const el = document.getElementById('gameover');
     el.style.display = 'block';
     const hasNext = currentLevel < levels.length - 1;
-    const lessonText = hasNext
+    document.getElementById('lesson').textContent = hasNext
       ? `aura: ${s.score} | ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}`
       : `FINAL AURA: ${s.score} | ${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}\n\nyou survived all of hawkins.\nthe upside down fears you now.`;
-    const lessonEl = document.getElementById('lesson');
-    lessonEl.textContent = '';
-    stopActiveRSVP();
-    playRSVP(lessonEl, lessonText, { onDone() { lessonEl.textContent = lessonText; } });
     document.getElementById('goTitle').textContent = hasNext
       ? '⭐'.repeat(stars) + ' LEVEL COMPLETE ' + '⭐'.repeat(stars)
       : '🏆 YOU BEAT SKIBIDI THINGS 🏆';
@@ -233,7 +228,7 @@ document.addEventListener('keydown', e => {
 
 // --- Restart / Advance ---
 function advanceLevel(carryScore, carryLives) {
-  stopBgTrack(); stopActiveRSVP();
+  stopBgTrack();
   const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
   document.getElementById('pickers').style.display = '';
   document.getElementById('soundboard').style.display = '';
@@ -254,7 +249,7 @@ function advanceLevel(carryScore, carryLives) {
 }
 
 function fullRestart() {
-  stopBgTrack(); stopActiveRSVP();
+  stopBgTrack();
   const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
   document.getElementById('pickers').style.display = '';
   document.getElementById('soundboard').style.display = '';
@@ -271,7 +266,7 @@ function fullRestart() {
 }
 
 function restartCurrentLevel() {
-  stopBgTrack(); stopActiveRSVP();
+  stopBgTrack();
   const btn = document.getElementById('saveCardBtn'); if (btn) btn.style.display = 'none';
   document.getElementById('pickers').style.display = '';
   document.getElementById('soundboard').style.display = '';

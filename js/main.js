@@ -4,7 +4,7 @@ import { eatSound, dieSound, beep, unlockAudio, startBgTrack, stopBgTrack, nextT
 import { addParticles } from './particles.js';
 import { initInput } from './input.js';
 import { render } from './renderer.js';
-import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, updateScore, updateCombo, think, showGameOver, setupSoundboard, setupSkinPicker, setupTheme, setupTrackPicker, stopActiveRSVP } from './ui.js';
+import { setupLights, flickerLights, popEmoji, popText, showSTCharacter, updateScore, updateCombo, think, showGameOver, setupSoundboard, setupSkinPicker, setupTheme, setupTrackPicker } from './ui.js';
 
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
@@ -203,7 +203,7 @@ requestAnimationFrame(renderFrame);
 // Restart without reloading — keeps AudioContext alive
 window.restartGame = function() {
   clearInterval(tick);
-  stopBgTrack(); stopActiveRSVP();
+  stopBgTrack();
   state.snake = [{x: 15, y: 10}];
   state.dir = {x: 0, y: 0};
   state.score = 0;

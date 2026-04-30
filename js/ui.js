@@ -1,11 +1,6 @@
 // UI — DOM manipulation, popups, lights, soundboard buttons
 import { emojis, floatTexts, stAsciiChars, goTitles, lessons, thoughts, nflTrivia, skins, getUnlockedSkins, getActiveSkin, setActiveSkin, getTheme, toggleTheme } from './config.js';
 import { sbSounds, getTrackNames, getCurrentTrack, startBgTrack } from './audio.js';
-import { playRSVP } from './rsvp.js';
-
-let activeRSVP = null; // track current RSVP so we can stop it on restart
-
-export function stopActiveRSVP() { if (activeRSVP) { activeRSVP.stop(); activeRSVP = null; } }
 
 // Christmas lights
 let lightEls = [];
@@ -83,18 +78,11 @@ export function think(score) {
 }
 
 export function showGameOver(score, prevHigh, isNewHigh) {
-  if (activeRSVP) { activeRSVP.stop(); activeRSVP = null; }
   document.getElementById('gameover').style.display = 'block';
   document.getElementById('goTitle').textContent = isNewHigh ? '🏆 NEW HIGH SCORE 🏆' : goTitles[Math.floor(Math.random() * goTitles.length)];
   const lesson = lessons[Math.floor(Math.random() * lessons.length)].replace(/SCORE/g, score);
   const highLine = isNewHigh ? `\n\n🔥 ${score} AURA 🔥\nprevious best: ${prevHigh}` : `\naura: ${score} | best: ${prevHigh}`;
-  const fullText = lesson + highLine;
-  const lessonEl = document.getElementById('lesson');
-  // RSVP the lesson, then show full static text
-  lessonEl.textContent = '';
-  activeRSVP = playRSVP(lessonEl, fullText, {
-    onDone() { lessonEl.textContent = fullText; activeRSVP = null; }
-  });
+  document.getElementById('lesson').textContent = lesson + highLine;
   for (let i = 0; i < 20; i++) setTimeout(() => popEmoji(2), i * 70);
   for (let i = 0; i < 8; i++) setTimeout(() => popText(false), i * 150);
   for (let i = 0; i < 4; i++) setTimeout(() => showSTCharacter(), i * 400);
