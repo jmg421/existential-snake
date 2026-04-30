@@ -9,7 +9,11 @@
   },
   "objects": [
     {"beat":8,"type":"spike"},
-    {"beat":16,"type":"spike"},
+
+    {"beat":12,"type":"block","h":1},
+    {"beat":14,"type":"block","h":2},
+    {"beat":16,"type":"block","h":3},
+
     {"beat":24,"type":"spike"},
 
     {"beat":32,"type":"block","h":1},
