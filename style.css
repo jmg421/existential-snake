@@ -54,6 +54,13 @@ canvas{border:3px solid #f0f;z-index:1;max-width:calc(100vw - 20px);box-shadow:0
 body.desktop #controls{display:none!important}
 #pauseBtn-top{display:flex!important}
 
+/* RSVP — word-at-a-time reveal */
+.rsvp-active{display:flex;justify-content:center;align-items:center;min-height:1.6em}
+.rsvp-word{font-size:22px;font-family:'Comic Neue',cursive;letter-spacing:1px;transition:opacity 40ms}
+.rsvp-anchor{color:#f0f;text-shadow:0 0 8px #f0f}
+.rsvp-paused .rsvp-word::after{content:' ⏸';font-size:14px;opacity:.5}
+body.light .rsvp-anchor{color:#60f;text-shadow:0 0 6px #a0f}
+
 /* Light mode */
 body.light{background:#f0f0ff}
 body.light canvas{border-color:#60f;box-shadow:0 0 20px rgba(100,0,255,0.2)}
