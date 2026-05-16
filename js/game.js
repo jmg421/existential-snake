@@ -27,7 +27,9 @@ canvas.width = CW; canvas.height = CH;
 const ctx = canvas.getContext('2d');
 
 function resizeCanvas() {
-  const scale = Math.min(1, (window.innerWidth - 20) / CW);
+  const scaleX = (window.innerWidth - 20) / CW;
+  const scaleY = (window.innerHeight - 100) / CH;
+  const scale = Math.min(scaleX, scaleY);
   canvas.style.width = (CW * scale) + 'px';
   canvas.style.height = (CH * scale) + 'px';
 }
@@ -192,6 +194,7 @@ function onTap() {
     return;
   }
   if (player.dead) return;
+  if (player.mode === 'ship') return; // ship uses hold, not tap
   const result = jump(player);
   if (result === 'orb') {
     playOrb(player.lastOrbColor || 'yellow');
@@ -204,10 +207,21 @@ function onTap() {
   }
 }
 
-canvas.addEventListener('click', onTap);
-canvas.addEventListener('touchstart', e => { e.preventDefault(); onTap(); }, { passive: false });
+function onHold() {
+  if (!started) { started = true; initAudio(); play(); }
+  player.holding = true;
+}
+function onRelease() { player.holding = false; }
+
+canvas.addEventListener('mousedown', e => { onHold(); onTap(); });
+canvas.addEventListener('mouseup', onRelease);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); onHold(); onTap(); }, { passive: false });
+canvas.addEventListener('touchend', e => { e.preventDefault(); onRelease(); }, { passive: false });
 document.addEventListener('keydown', e => {
-  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); onTap(); }
+  if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); if (!e.repeat) { onHold(); onTap(); } }
+});
+document.addEventListener('keyup', e => {
+  if (e.code === 'Space' || e.code === 'ArrowUp') onRelease();
 });
 
 // GD Level Browser + Import
@@ -281,14 +295,14 @@ async function loadGDLevel(id, name) {
   gdStatus.textContent = `Downloading level ${id}...`;
   try {
     const text = await gdPost('downloadGJLevel22.php', { levelID: id });
-    if (text === '-1') { console.log('[GD] Level not found'); gdStatus.textContent = 'Level not found'; return; }
+    if (text === '-1') { console.log('[GD] Level not found'); gdStatus.textContent = 'Level not found'; throw new Error('Level not found'); }
     const kv = text.split(':');
     const m = {};
     for (let i = 0; i < kv.length - 1; i += 2) m[kv[i]] = kv[i + 1];
     const levelStr = m[4];
     console.log('[GD] Level keys:', Object.keys(m).join(','));
     console.log('[GD] Level string length:', levelStr?.length || 0);
-    if (!levelStr) { gdStatus.textContent = 'No level data in response'; return; }
+    if (!levelStr) { gdStatus.textContent = 'No level data in response'; throw new Error('No level data'); }
     gdStatus.textContent = 'Parsing...';
     const bpm = parseInt(document.getElementById('gdBpm').value) || 140;
     const imported = importGDLevel(levelStr, { bpm, name: name || 'GD Import' });
@@ -331,6 +345,6 @@ async function loadLevelData(data) {
 }
 
 (async () => {
-  await loadLevel('levels/chapter-1.json');
+  await loadLevel('levels/void-reaper.json');
   requestAnimationFrame(frame);
 })();

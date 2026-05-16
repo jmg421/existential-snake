@@ -3,7 +3,7 @@ import { UNIT, PLAYER_X, PLAYER_SIZE } from './physics.js';
 import { beat } from './beat-clock.js';
 import * as P from './particles.js';
 
-export const CW = 800, CH = 400;
+export const CW = 1200, CH = 600;
 const GLY = CH - 80; // ground line Y — FLAT, no slope
 
 function toY(worldY) { return GLY - worldY * UNIT; }
@@ -177,6 +177,19 @@ export function render(ctx, state) {
       ctx.strokeStyle = col;
       ctx.lineWidth = 2;
       ctx.strokeRect(bx + 10, by, 20, UNIT * 2.5 | 0);
+
+    } else if (obj.type === 'portal_ship' || obj.type === 'portal_cube') {
+      const bx = sx | 0, by = toY(4) | 0;
+      const col = obj.type === 'portal_ship' ? '#f0f' : '#0ff';
+      ctx.fillStyle = `${col}22`;
+      ctx.fillRect(bx + 8, by, 24, UNIT * 4 | 0);
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bx + 8, by, 24, UNIT * 4 | 0);
+      ctx.fillStyle = col;
+      ctx.font = 'bold 14px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(obj.type === 'portal_ship' ? '▷' : '□', bx + 20, by + UNIT * 2);
     }
   }
 
@@ -217,11 +230,25 @@ export function render(ctx, state) {
     ctx.rotate(player.rotation * Math.PI / 180);
     ctx.scale(player.scaleX || 1, player.scaleY || 1);
     ctx.fillStyle = '#0f0';
-    ctx.fillRect(-ps / 2, -ps / 2, ps, ps);
-    // Face
-    ctx.fillStyle = '#000';
-    ctx.fillRect(-ps / 2 + ps * 0.55 | 0, -ps / 2 + ps * 0.2 | 0, ps * 0.12 | 0, ps * 0.2 | 0);
-    ctx.fillRect(-ps / 2 + ps * 0.75 | 0, -ps / 2 + ps * 0.2 | 0, ps * 0.12 | 0, ps * 0.2 | 0);
+    if (player.mode === 'ship') {
+      // Ship shape: a pointed triangle/arrow
+      ctx.beginPath();
+      ctx.moveTo(ps / 2, 0);
+      ctx.lineTo(-ps / 2, -ps / 2);
+      ctx.lineTo(-ps / 4, 0);
+      ctx.lineTo(-ps / 2, ps / 2);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = '#0a0';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else {
+      ctx.fillRect(-ps / 2, -ps / 2, ps, ps);
+      // Face
+      ctx.fillStyle = '#000';
+      ctx.fillRect(-ps / 2 + ps * 0.55 | 0, -ps / 2 + ps * 0.2 | 0, ps * 0.12 | 0, ps * 0.2 | 0);
+      ctx.fillRect(-ps / 2 + ps * 0.75 | 0, -ps / 2 + ps * 0.2 | 0, ps * 0.12 | 0, ps * 0.2 | 0);
+    }
     ctx.restore();
 
     // Ground shadow

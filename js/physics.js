@@ -24,6 +24,8 @@ export function createPlayer() {
     wasGrounded: true,
     scaleX: 1, scaleY: 1,
     lastOrbColor: null,
+    mode: 'cube', // 'cube' or 'ship'
+    holding: false, // is input held (for ship mode)
   };
 }
 
@@ -31,6 +33,32 @@ export function updatePlayer(player, dt) {
   if (player.dead) return;
   player.wasGrounded = player.grounded;
 
+  if (player.mode === 'ship') {
+    // Ship mode: hold = fly up, release = fall
+    const SHIP_GRAVITY = 25;
+    const SHIP_FLY = -30;
+    const SHIP_MAX_VY = 15;
+    if (player.holding) {
+      player.vy += SHIP_FLY * dt;
+    } else {
+      player.vy += SHIP_GRAVITY * dt;
+    }
+    player.vy = Math.max(-SHIP_MAX_VY, Math.min(SHIP_MAX_VY, player.vy));
+    player.y -= player.vy * dt;
+    // Ceiling
+    if (player.y > 9 - PLAYER_SIZE) { player.y = 9 - PLAYER_SIZE; player.vy = 0; }
+    // Floor
+    if (player.y < 0) { player.y = 0; player.vy = 0; }
+    player.grounded = false;
+    // Ship rotation follows velocity
+    player.rotation = player.vy * -3;
+    player.targetRotation = player.rotation;
+    player.scaleX += (1 - player.scaleX) * 0.25;
+    player.scaleY += (1 - player.scaleY) * 0.25;
+    return;
+  }
+
+  // Cube mode (original)
   if (player.grounded) player.coyoteTimer = COYOTE_TIME;
   else player.coyoteTimer = Math.max(0, player.coyoteTimer - dt);
 
@@ -219,6 +247,17 @@ export function collide(player, objects, scrollX) {
         }
       }
     }
+
+    // Mode portals (ship/cube)
+    if (obj.type === 'portal_ship' || obj.type === 'portal_cube') {
+      if (pR > ox && pL < ox + 1 && pT > -1 && pB < 12) {
+        if (!player.activatedObjects.has(objId)) {
+          player.activatedObjects.add(objId);
+          player.mode = obj.type === 'portal_ship' ? 'ship' : 'cube';
+          if (player.mode === 'ship') { player.grounded = false; }
+        }
+      }
+    }
   }
 
   return padResult ? 'pad_' + padResult : null;
@@ -243,4 +282,6 @@ export function resetPlayer(player) {
   player.scaleX = 1; player.scaleY = 1;
   player.wasGrounded = true;
   player.lastOrbColor = null;
+  player.mode = 'cube';
+  player.holding = false;
 }
