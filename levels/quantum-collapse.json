@@ -1,0 +1,91 @@
+{
+  "meta": {
+    "name": "QUANTUM COLLAPSE",
+    "author": "QPU + skibidi-things",
+    "song": "audio/the-other-side.mp3",
+    "bpm": 150,
+    "offset": 0.05,
+    "speed": 10,
+    "generated_by": "quantum",
+    "quantum_provenance": {
+      "device": "rigetti",
+      "qubits": 16,
+      "shots": 1000,
+      "qaoa_depth": 3,
+      "search_space_per_pair": "65,536",
+      "full_search_space": "1.8e+19",
+      "top_measurements": {
+        "1111001100100001": 4,
+        "1111000000000011": 3,
+        "1111001000000001": 3,
+        "1110001010010001": 3,
+        "1001000001100011": 3,
+        "1100000000110011": 3,
+        "1001000111100001": 3,
+        "1111001110000001": 3
+      },
+      "task_arn": "arn:aws:braket:us-west-1:568878824271:quantum-task/693125c6-a354-4f62-89b6-2f919fdc9e65"
+    }
+  },
+  "objects": [
+    {
+      "beat": 4,
+      "type": "portal_gravity_flip"
+    },
+    {
+      "beat": 5.0,
+      "type": "portal_ship"
+    },
+    {
+      "beat": 6.0,
+      "type": "orb_blue",
+      "y": 4
+    },
+    {
+      "beat": 6.0,
+      "type": "portal_gravity_flip"
+    },
+    {
+      "beat": 7.0,
+      "type": "pad_yellow"
+    },
+    {
+      "beat": 8.0,
+      "type": "orb_yellow",
+      "y": 1
+    },
+    {
+      "beat": 8.0,
+      "type": "portal_gravity_flip"
+    },
+    {
+      "beat": 9.0,
+      "type": "pad_blue"
+    },
+    {
+      "beat": 10.0,
+      "type": "orb_yellow",
+      "y": 4
+    },
+    {
+      "beat": 11.0,
+      "type": "portal_gravity_flip"
+    }
+  ],
+  "triggers": [
+    {
+      "beat": 0,
+      "type": "color",
+      "bg": [
+        0,
+        5,
+        20
+      ],
+      "ground": [
+        0,
+        20,
+        60
+      ]
+    }
+  ]
+}
