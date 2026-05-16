@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "QUANTUM COLLAPSE",
-    "author": "QPU + skibidi-things",
+    "author": "Rigetti Cepheus 108Q QPU",
     "song": "audio/the-other-side.mp3",
     "bpm": 150,
     "offset": 0.05,
@@ -9,41 +9,36 @@
     "generated_by": "quantum",
     "quantum_provenance": {
       "device": "rigetti",
-      "qubits": 16,
+      "qubits": 106,
       "shots": 1000,
-      "qaoa_depth": 3,
-      "search_space_per_pair": "65,536",
-      "full_search_space": "1.8e+19",
-      "top_measurements": {
-        "1111001100100001": 4,
-        "1111000000000011": 3,
-        "1111001000000001": 3,
-        "1110001010010001": 3,
-        "1001000001100011": 3,
-        "1100000000110011": 3,
-        "1001000111100001": 3,
-        "1111001110000001": 3
+      "qaoa_depth": 2,
+      "search_space": "2^106 = 8.1e+31",
+      "unique_measurements": 1000,
+      "top_5_measurements": {
+        "1101010011011000011100010111000111100110111001111011011101111111110111111001001011010000011111110001111010": 1,
+        "1011111100110011110011101010100001011011111110000011111010001110010000110100011101011100010111010011101111": 1,
+        "1110101101001101011111010111111001011100010111111010111101111011110011011011111111111101100111110010101110": 1,
+        "1100110010000110111101001101101010000011111011111111101110110110110111111100000111010110010011101111110110": 1,
+        "1010101110011101111110000110001011101101010111000000110000111100000001010111000000111111011111110010110100": 1
       },
-      "task_arn": "arn:aws:braket:us-west-1:568878824271:quantum-task/693125c6-a354-4f62-89b6-2f919fdc9e65"
+      "task_arn": "arn:aws:braket:us-west-1:568878824271:quantum-task/36e479c0-83b9-4a01-96f4-258c64619caa"
     }
   },
   "objects": [
     {
-      "beat": 4,
-      "type": "portal_gravity_flip"
-    },
-    {
       "beat": 5.0,
-      "type": "portal_ship"
+      "type": "block",
+      "h": 1
     },
     {
       "beat": 6.0,
-      "type": "orb_blue",
-      "y": 4
+      "type": "block",
+      "h": 1
     },
     {
-      "beat": 6.0,
-      "type": "portal_gravity_flip"
+      "beat": 6.5,
+      "type": "spike",
+      "y": 1
     },
     {
       "beat": 7.0,
@@ -51,30 +46,268 @@
     },
     {
       "beat": 8.0,
-      "type": "orb_yellow",
-      "y": 1
-    },
-    {
-      "beat": 8.0,
-      "type": "portal_gravity_flip"
-    },
-    {
-      "beat": 9.0,
-      "type": "pad_blue"
+      "type": "portal_ship"
     },
     {
       "beat": 10.0,
+      "type": "block",
+      "h": 1
+    },
+    {
+      "beat": 11.0,
+      "type": "block",
+      "h": 1
+    },
+    {
+      "beat": 11.5,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 13.0,
+      "type": "block",
+      "h": 1
+    },
+    {
+      "beat": 13.5,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 14.0,
+      "type": "spike"
+    },
+    {
+      "beat": 15.0,
+      "type": "pad_yellow"
+    },
+    {
+      "beat": 16.0,
+      "type": "orb_yellow",
+      "y": 2
+    },
+    {
+      "beat": 17.0,
+      "type": "block",
+      "h": 1
+    },
+    {
+      "beat": 17.5,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 19.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 19.5,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 21.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 21.5,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 22.0,
+      "type": "pad_blue"
+    },
+    {
+      "beat": 23.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 23.5,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 24.0,
+      "type": "spike"
+    },
+    {
+      "beat": 25.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 25.5,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 26.0,
+      "type": "orb_yellow",
+      "y": 2
+    },
+    {
+      "beat": 28.0,
+      "type": "block",
+      "h": 1
+    },
+    {
+      "beat": 28.5,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 31.0,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 32.0,
+      "type": "portal_ship"
+    },
+    {
+      "beat": 34.0,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 37.0,
+      "type": "block",
+      "h": 3
+    },
+    {
+      "beat": 37.5,
+      "type": "spike",
+      "y": 3
+    },
+    {
+      "beat": 38.0,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 39.0,
+      "type": "pad_yellow"
+    },
+    {
+      "beat": 42.0,
+      "type": "orb_blue",
+      "y": 3
+    },
+    {
+      "beat": 43.0,
+      "type": "block",
+      "h": 3
+    },
+    {
+      "beat": 43.5,
+      "type": "spike",
+      "y": 3
+    },
+    {
+      "beat": 44.0,
+      "type": "portal_ship"
+    },
+    {
+      "beat": 45.0,
       "type": "orb_yellow",
       "y": 4
     },
     {
-      "beat": 11.0,
-      "type": "portal_gravity_flip"
+      "beat": 46.0,
+      "type": "pad_blue"
+    },
+    {
+      "beat": 47.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 47.5,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 48.0,
+      "type": "portal_cube"
+    },
+    {
+      "beat": 52.0,
+      "type": "orb_yellow",
+      "y": 2
+    },
+    {
+      "beat": 53.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 53.5,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 54.0,
+      "type": "orb_blue",
+      "y": 4
+    },
+    {
+      "beat": 55.0,
+      "type": "block",
+      "h": 1
+    },
+    {
+      "beat": 55.5,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 56.0,
+      "type": "portal_ship"
     }
   ],
   "triggers": [
     {
       "beat": 0,
+      "type": "color",
+      "bg": [
+        5,
+        0,
+        15
+      ],
+      "ground": [
+        20,
+        0,
+        40
+      ]
+    },
+    {
+      "beat": 4.0,
+      "type": "color",
+      "bg": [
+        5,
+        0,
+        15
+      ],
+      "ground": [
+        20,
+        0,
+        40
+      ]
+    },
+    {
+      "beat": 4.0,
+      "type": "flash"
+    },
+    {
+      "beat": 8.0,
+      "type": "shake"
+    },
+    {
+      "beat": 17.25,
       "type": "color",
       "bg": [
         0,
@@ -86,6 +319,62 @@
         20,
         60
       ]
+    },
+    {
+      "beat": 17.25,
+      "type": "flash"
+    },
+    {
+      "beat": 30.5,
+      "type": "color",
+      "bg": [
+        15,
+        0,
+        5
+      ],
+      "ground": [
+        50,
+        0,
+        20
+      ]
+    },
+    {
+      "beat": 30.5,
+      "type": "flash"
+    },
+    {
+      "beat": 32.0,
+      "type": "shake"
+    },
+    {
+      "beat": 43.75,
+      "type": "color",
+      "bg": [
+        10,
+        0,
+        0
+      ],
+      "ground": [
+        40,
+        0,
+        0
+      ]
+    },
+    {
+      "beat": 43.75,
+      "type": "flash"
+    },
+    {
+      "beat": 44.0,
+      "type": "shake"
+    },
+    {
+      "beat": 48.0,
+      "type": "shake"
+    },
+    {
+      "beat": 56.0,
+      "type": "shake"
     }
   ]
 }
