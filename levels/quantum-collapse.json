@@ -1,7 +1,7 @@
 {
   "meta": {
     "name": "QUANTUM COLLAPSE",
-    "author": "Rigetti Cepheus 108Q QPU",
+    "author": "Rigetti Cepheus 106Q QPU",
     "song": "audio/the-other-side.mp3",
     "bpm": 150,
     "offset": 0.05,
@@ -15,34 +15,33 @@
       "search_space": "2^106 = 8.1e+31",
       "unique_measurements": 1000,
       "top_5_measurements": {
-        "1101010011011000011100010111000111100110111001111011011101111111110111111001001011010000011111110001111010": 1,
-        "1011111100110011110011101010100001011011111110000011111010001110010000110100011101011100010111010011101111": 1,
-        "1110101101001101011111010111111001011100010111111010111101111011110011011011111111111101100111110010101110": 1,
-        "1100110010000110111101001101101010000011111011111111101110110110110111111100000111010110010011101111110110": 1,
-        "1010101110011101111110000110001011101101010111000000110000111100000001010111000000111111011111110010110100": 1
+        "0100001100001010001011011000010001111000101111011110000010001111110111100010111111101111011000101000111101": 1,
+        "1011001100110000001111000010001000011100111110001110111011101111100111101111101001111110001000111110110100": 1,
+        "1000001000101111011011000111000111001111101101001000010011011110111101111110111110101101110100010101011110": 1,
+        "1001001100101110111111101100000110100100110111101111100011011100000111110101100111000010000010101011110101": 1,
+        "0100000010110110011101010011011111110110010101111111101101010101101111101010110011111111011110111110011011": 1
       },
-      "task_arn": "arn:aws:braket:us-west-1:568878824271:quantum-task/36e479c0-83b9-4a01-96f4-258c64619caa"
+      "task_arn": "arn:aws:braket:us-west-1:568878824271:quantum-task/1242a20c-d7f0-49be-a966-7319c2858187"
     }
   },
   "objects": [
     {
-      "beat": 5.0,
-      "type": "block",
-      "h": 1
-    },
-    {
       "beat": 6.0,
+      "type": "spike"
+    },
+    {
+      "beat": 7.0,
       "type": "block",
       "h": 1
     },
     {
-      "beat": 6.5,
+      "beat": 7.5,
       "type": "spike",
       "y": 1
     },
     {
-      "beat": 7.0,
-      "type": "pad_yellow"
+      "beat": 8.0,
+      "type": "spike"
     },
     {
       "beat": 8.0,
@@ -51,17 +50,36 @@
     {
       "beat": 10.0,
       "type": "block",
-      "h": 1
+      "h": 2
+    },
+    {
+      "beat": 10.0,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 10.5,
+      "type": "block",
+      "h": 6
+    },
+    {
+      "beat": 10.5,
+      "type": "spike",
+      "y": 6
     },
     {
       "beat": 11.0,
       "type": "block",
-      "h": 1
+      "h": 3
     },
     {
-      "beat": 11.5,
+      "beat": 11.0,
       "type": "spike",
-      "y": 1
+      "y": 3
+    },
+    {
+      "beat": 12.0,
+      "type": "portal_cube"
     },
     {
       "beat": 13.0,
@@ -78,124 +96,330 @@
       "type": "spike"
     },
     {
+      "beat": 14.0,
+      "type": "spike"
+    },
+    {
       "beat": 15.0,
       "type": "pad_yellow"
     },
     {
       "beat": 16.0,
-      "type": "orb_yellow",
-      "y": 2
+      "type": "spike"
+    },
+    {
+      "beat": 16.5,
+      "type": "spike"
     },
     {
       "beat": 17.0,
-      "type": "block",
-      "h": 1
+      "type": "spike"
+    },
+    {
+      "beat": 17.0,
+      "type": "spike"
     },
     {
       "beat": 17.5,
-      "type": "spike",
-      "y": 1
+      "type": "spike"
+    },
+    {
+      "beat": 18.0,
+      "type": "spike"
+    },
+    {
+      "beat": 18.5,
+      "type": "spike"
     },
     {
       "beat": 19.0,
-      "type": "block",
-      "h": 2
+      "type": "pad_yellow"
     },
     {
-      "beat": 19.5,
-      "type": "spike",
-      "y": 2
+      "beat": 20.0,
+      "type": "spike"
+    },
+    {
+      "beat": 20.0,
+      "type": "portal_ship"
+    },
+    {
+      "beat": 20.5,
+      "type": "spike"
+    },
+    {
+      "beat": 21.0,
+      "type": "spike"
     },
     {
       "beat": 21.0,
       "type": "block",
+      "h": 7
+    },
+    {
+      "beat": 21.0,
+      "type": "spike",
+      "y": 7
+    },
+    {
+      "beat": 22.0,
+      "type": "block",
       "h": 2
     },
     {
-      "beat": 21.5,
+      "beat": 22.0,
       "type": "spike",
       "y": 2
     },
     {
-      "beat": 22.0,
-      "type": "pad_blue"
+      "beat": 22.5,
+      "type": "block",
+      "h": 6
+    },
+    {
+      "beat": 22.5,
+      "type": "spike",
+      "y": 6
     },
     {
       "beat": 23.0,
       "type": "block",
-      "h": 2
-    },
-    {
-      "beat": 23.5,
-      "type": "spike",
-      "y": 2
-    },
-    {
-      "beat": 24.0,
-      "type": "spike"
-    },
-    {
-      "beat": 25.0,
-      "type": "block",
-      "h": 2
-    },
-    {
-      "beat": 25.5,
-      "type": "spike",
-      "y": 2
-    },
-    {
-      "beat": 26.0,
-      "type": "orb_yellow",
-      "y": 2
-    },
-    {
-      "beat": 28.0,
-      "type": "block",
-      "h": 1
-    },
-    {
-      "beat": 28.5,
-      "type": "spike",
-      "y": 1
-    },
-    {
-      "beat": 31.0,
-      "type": "spike",
-      "y": 2
-    },
-    {
-      "beat": 32.0,
-      "type": "portal_ship"
-    },
-    {
-      "beat": 34.0,
-      "type": "spike",
-      "y": 1
-    },
-    {
-      "beat": 37.0,
-      "type": "block",
       "h": 3
     },
     {
-      "beat": 37.5,
+      "beat": 23.0,
       "type": "spike",
       "y": 3
     },
     {
-      "beat": 38.0,
+      "beat": 25.0,
+      "type": "block",
+      "h": 5
+    },
+    {
+      "beat": 25.0,
       "type": "spike",
-      "y": 1
+      "y": 5
+    },
+    {
+      "beat": 26.0,
+      "type": "spike"
+    },
+    {
+      "beat": 27.0,
+      "type": "block",
+      "h": 7
+    },
+    {
+      "beat": 27.0,
+      "type": "spike",
+      "y": 7
+    },
+    {
+      "beat": 28.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 28.0,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 28.5,
+      "type": "block",
+      "h": 8
+    },
+    {
+      "beat": 28.5,
+      "type": "spike",
+      "y": 8
+    },
+    {
+      "beat": 29.0,
+      "type": "block",
+      "h": 3
+    },
+    {
+      "beat": 29.0,
+      "type": "spike",
+      "y": 3
+    },
+    {
+      "beat": 30.0,
+      "type": "block",
+      "h": 4
+    },
+    {
+      "beat": 30.0,
+      "type": "spike",
+      "y": 4
+    },
+    {
+      "beat": 30.5,
+      "type": "block",
+      "h": 6
+    },
+    {
+      "beat": 30.5,
+      "type": "spike",
+      "y": 6
+    },
+    {
+      "beat": 32.0,
+      "type": "block",
+      "h": 6
+    },
+    {
+      "beat": 32.0,
+      "type": "spike",
+      "y": 6
+    },
+    {
+      "beat": 32.5,
+      "type": "block",
+      "h": 8
+    },
+    {
+      "beat": 32.5,
+      "type": "spike",
+      "y": 8
+    },
+    {
+      "beat": 33.0,
+      "type": "block",
+      "h": 7
+    },
+    {
+      "beat": 33.0,
+      "type": "spike",
+      "y": 7
+    },
+    {
+      "beat": 34.0,
+      "type": "block",
+      "h": 2
+    },
+    {
+      "beat": 34.0,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 34.5,
+      "type": "block",
+      "h": 6
+    },
+    {
+      "beat": 34.5,
+      "type": "spike",
+      "y": 6
+    },
+    {
+      "beat": 35.0,
+      "type": "block",
+      "h": 3
+    },
+    {
+      "beat": 35.0,
+      "type": "spike",
+      "y": 3
+    },
+    {
+      "beat": 36.0,
+      "type": "portal_cube"
+    },
+    {
+      "beat": 37.0,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 37.25,
+      "type": "spike"
+    },
+    {
+      "beat": 37.5,
+      "type": "spike"
+    },
+    {
+      "beat": 37.75,
+      "type": "spike"
+    },
+    {
+      "beat": 38.0,
+      "type": "orb_yellow",
+      "y": 3
+    },
+    {
+      "beat": 38.5,
+      "type": "spike"
+    },
+    {
+      "beat": 39.0,
+      "type": "spike"
     },
     {
       "beat": 39.0,
       "type": "pad_yellow"
     },
     {
+      "beat": 39.5,
+      "type": "spike"
+    },
+    {
+      "beat": 40.0,
+      "type": "spike"
+    },
+    {
+      "beat": 40.0,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 40.25,
+      "type": "spike"
+    },
+    {
+      "beat": 40.5,
+      "type": "spike"
+    },
+    {
+      "beat": 40.5,
+      "type": "spike"
+    },
+    {
+      "beat": 40.75,
+      "type": "spike"
+    },
+    {
+      "beat": 41.0,
+      "type": "spike"
+    },
+    {
+      "beat": 41.0,
+      "type": "spike",
+      "y": 2
+    },
+    {
+      "beat": 41.25,
+      "type": "spike"
+    },
+    {
+      "beat": 41.5,
+      "type": "spike"
+    },
+    {
+      "beat": 41.75,
+      "type": "spike"
+    },
+    {
       "beat": 42.0,
-      "type": "orb_blue",
-      "y": 3
+      "type": "spike"
+    },
+    {
+      "beat": 42.5,
+      "type": "spike"
     },
     {
       "beat": 43.0,
@@ -209,30 +433,107 @@
     },
     {
       "beat": 44.0,
+      "type": "spike"
+    },
+    {
+      "beat": 44.0,
       "type": "portal_ship"
     },
     {
+      "beat": 44.25,
+      "type": "spike"
+    },
+    {
+      "beat": 44.5,
+      "type": "spike"
+    },
+    {
       "beat": 45.0,
-      "type": "orb_yellow",
-      "y": 4
+      "type": "block",
+      "h": 7
+    },
+    {
+      "beat": 45.0,
+      "type": "spike",
+      "y": 7
     },
     {
       "beat": 46.0,
-      "type": "pad_blue"
-    },
-    {
-      "beat": 47.0,
       "type": "block",
       "h": 2
     },
     {
-      "beat": 47.5,
+      "beat": 46.0,
       "type": "spike",
       "y": 2
     },
     {
+      "beat": 46.5,
+      "type": "block",
+      "h": 6
+    },
+    {
+      "beat": 46.5,
+      "type": "spike",
+      "y": 6
+    },
+    {
+      "beat": 47.0,
+      "type": "block",
+      "h": 3
+    },
+    {
+      "beat": 47.0,
+      "type": "spike",
+      "y": 3
+    },
+    {
       "beat": 48.0,
       "type": "portal_cube"
+    },
+    {
+      "beat": 49.0,
+      "type": "block",
+      "h": 1
+    },
+    {
+      "beat": 49.5,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 50.0,
+      "type": "spike"
+    },
+    {
+      "beat": 50.0,
+      "type": "spike"
+    },
+    {
+      "beat": 50.25,
+      "type": "spike"
+    },
+    {
+      "beat": 50.5,
+      "type": "spike"
+    },
+    {
+      "beat": 50.5,
+      "type": "spike"
+    },
+    {
+      "beat": 51.0,
+      "type": "block",
+      "h": 3
+    },
+    {
+      "beat": 51.5,
+      "type": "spike",
+      "y": 3
+    },
+    {
+      "beat": 52.0,
+      "type": "spike"
     },
     {
       "beat": 52.0,
@@ -240,14 +541,45 @@
       "y": 2
     },
     {
+      "beat": 52.25,
+      "type": "spike"
+    },
+    {
+      "beat": 52.5,
+      "type": "spike"
+    },
+    {
+      "beat": 52.5,
+      "type": "spike"
+    },
+    {
       "beat": 53.0,
-      "type": "block",
-      "h": 2
+      "type": "spike"
+    },
+    {
+      "beat": 53.0,
+      "type": "spike",
+      "y": 1
+    },
+    {
+      "beat": 53.125,
+      "type": "spike"
+    },
+    {
+      "beat": 53.25,
+      "type": "spike"
     },
     {
       "beat": 53.5,
-      "type": "spike",
-      "y": 2
+      "type": "spike"
+    },
+    {
+      "beat": 53.5,
+      "type": "spike"
+    },
+    {
+      "beat": 53.75,
+      "type": "spike"
     },
     {
       "beat": 54.0,
@@ -255,18 +587,24 @@
       "y": 4
     },
     {
+      "beat": 54.5,
+      "type": "spike"
+    },
+    {
       "beat": 55.0,
-      "type": "block",
-      "h": 1
+      "type": "spike"
     },
     {
       "beat": 55.5,
-      "type": "spike",
-      "y": 1
+      "type": "spike"
     },
     {
       "beat": 56.0,
       "type": "portal_ship"
+    },
+    {
+      "beat": 57.0,
+      "type": "portal_cube"
     }
   ],
   "triggers": [
@@ -303,29 +641,27 @@
       "type": "flash"
     },
     {
+      "beat": 4.0,
+      "type": "shake"
+    },
+    {
+      "beat": 8.0,
+      "type": "flash"
+    },
+    {
       "beat": 8.0,
       "type": "shake"
     },
     {
-      "beat": 17.25,
-      "type": "color",
-      "bg": [
-        0,
-        5,
-        20
-      ],
-      "ground": [
-        0,
-        20,
-        60
-      ]
-    },
-    {
-      "beat": 17.25,
+      "beat": 12.0,
       "type": "flash"
     },
     {
-      "beat": 30.5,
+      "beat": 12.0,
+      "type": "shake"
+    },
+    {
+      "beat": 17.25,
       "type": "color",
       "bg": [
         15,
@@ -339,11 +675,49 @@
       ]
     },
     {
+      "beat": 17.25,
+      "type": "flash"
+    },
+    {
+      "beat": 17.25,
+      "type": "shake"
+    },
+    {
+      "beat": 20.0,
+      "type": "flash"
+    },
+    {
+      "beat": 20.0,
+      "type": "shake"
+    },
+    {
+      "beat": 30.5,
+      "type": "color",
+      "bg": [
+        0,
+        0,
+        20
+      ],
+      "ground": [
+        0,
+        0,
+        60
+      ]
+    },
+    {
       "beat": 30.5,
       "type": "flash"
     },
     {
-      "beat": 32.0,
+      "beat": 30.5,
+      "type": "shake"
+    },
+    {
+      "beat": 36.0,
+      "type": "flash"
+    },
+    {
+      "beat": 36.0,
       "type": "shake"
     },
     {
@@ -365,8 +739,20 @@
       "type": "flash"
     },
     {
+      "beat": 43.75,
+      "type": "shake"
+    },
+    {
+      "beat": 44.0,
+      "type": "flash"
+    },
+    {
       "beat": 44.0,
       "type": "shake"
+    },
+    {
+      "beat": 48.0,
+      "type": "flash"
     },
     {
       "beat": 48.0,
@@ -374,7 +760,15 @@
     },
     {
       "beat": 56.0,
+      "type": "flash"
+    },
+    {
+      "beat": 56.0,
       "type": "shake"
+    },
+    {
+      "beat": 57.0,
+      "type": "flash"
     }
   ]
 }

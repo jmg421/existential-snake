@@ -112,19 +112,16 @@ def score_level(bitstring):
         if slot is None:
             consecutive_empty += 1
             consecutive_filled = 0
-            # Reward some breathing room
-            if consecutive_empty == 1:
-                score += 1.0
-            # Penalize too much empty
-            elif consecutive_empty > 3:
-                score -= 2.0
+            # Penalize empty (hard levels are dense)
+            if consecutive_empty > 2:
+                score -= 3.0
         else:
             obj_count += 1
             consecutive_filled += 1
             consecutive_empty = 0
-            # Penalize too many in a row
-            if consecutive_filled > 4:
-                score -= 1.5
+            # Penalize too many in a row (but less — hard levels have runs)
+            if consecutive_filled > 6:
+                score -= 1.0
 
             # Reward variety with neighbors
             if i > 0 and slots[i-1] is not None:
@@ -143,12 +140,12 @@ def score_level(bitstring):
             if slot['type'] == 'portal_cube' and has_ship_section:
                 score += 3.0
 
-    # Target density: 50-65% filled
+    # Target density: 70-85% filled (HARD level)
     density = obj_count / N_SLOTS
-    if 0.45 <= density <= 0.70:
-        score += 10.0
+    if 0.65 <= density <= 0.85:
+        score += 15.0
     else:
-        score -= abs(density - 0.55) * 20.0
+        score -= abs(density - 0.75) * 30.0
 
     # Reward having a ship section
     if has_ship_section:
@@ -392,64 +389,112 @@ def run_classical(n_samples=1_000_000):
 # ============================================================
 
 def slots_to_level(slots, provenance=None):
-    """Convert slots into a full playable level JSON."""
+    """Convert slots into a DENSE, HARD level (Void Reaper difficulty)."""
     objects = []
     triggers = [{"beat": 0, "type": "color", "bg": [5, 0, 15], "ground": [20, 0, 40]}]
     beat = BEAT_START
     in_ship = False
-    last_type = None
 
     for i, slot in enumerate(slots):
+        progress = i / len(slots)
+
         if slot is None:
+            # Empty slots still get spikes in later sections
+            if progress > 0.4 and i % 2 == 0:
+                objects.append({"beat": beat, "type": "spike"})
+                if progress > 0.7:
+                    objects.append({"beat": beat + 0.5, "type": "spike"})
             beat += BEAT_STEP
-            last_type = None
             continue
 
-        obj = {"beat": beat, "type": slot['type']}
+        if not in_ship:
+            if slot['type'] == 'spike':
+                y = slot['h'] - 1 if slot['h'] > 1 else 0
+                obj = {"beat": beat, "type": "spike"}
+                if y > 0:
+                    obj["y"] = y
+                objects.append(obj)
+                # Spike clusters get denser as level progresses
+                if progress > 0.2:
+                    objects.append({"beat": beat + 0.5, "type": "spike"})
+                if progress > 0.5:
+                    objects.append({"beat": beat + 0.25, "type": "spike"})
+                    objects.append({"beat": beat + 0.75, "type": "spike"})
+                if progress > 0.8:
+                    objects.append({"beat": beat + 0.125, "type": "spike"})
 
-        if slot['type'] == 'block':
-            obj["h"] = slot['h']
-        elif slot['type'] == 'spike':
-            if slot['h'] > 1:
-                obj["y"] = slot['h'] - 1
-        elif slot['type'] in ('orb_yellow', 'orb_blue'):
-            obj["y"] = min(slot['h'] + 1, 5)
-        elif slot['type'] == 'portal_ship':
-            in_ship = True
-        elif slot['type'] == 'portal_cube':
-            in_ship = False
-
-        objects.append(obj)
-
-        # Add spike on top of blocks sometimes
-        if slot['type'] == 'block' and i < len(slots) - 1:
-            if slots[i+1] is None or slots[i+1]['type'] != 'block':
+            elif slot['type'] == 'block':
+                objects.append({"beat": beat, "type": "block", "h": slot['h']})
                 objects.append({"beat": beat + 0.5, "type": "spike", "y": slot['h']})
+                # Trailing spikes
+                objects.append({"beat": beat + 1.0, "type": "spike"})
+                if progress > 0.5:
+                    objects.append({"beat": beat + 1.5, "type": "spike"})
+                    objects.append({"beat": beat + 1.25, "type": "spike"})
 
-        last_type = slot['type']
+            elif slot['type'] in ('orb_yellow', 'orb_blue'):
+                objects.append({"beat": beat, "type": slot['type'], "y": min(slot['h'] + 1, 5)})
+                # Must use the orb — spikes everywhere after
+                objects.append({"beat": beat + 0.5, "type": "spike"})
+                objects.append({"beat": beat + 1.0, "type": "spike"})
+                objects.append({"beat": beat + 1.5, "type": "spike"})
+
+            elif slot['type'] in ('pad_yellow', 'pad_blue'):
+                objects.append({"beat": beat, "type": slot['type']})
+                objects.append({"beat": beat + 1.0, "type": "spike"})
+                objects.append({"beat": beat + 1.5, "type": "spike"})
+                objects.append({"beat": beat + 2.0, "type": "spike"})
+
+            elif slot['type'] == 'portal_ship':
+                objects.append({"beat": beat, "type": "portal_ship"})
+                in_ship = True
+                triggers.append({"beat": beat, "type": "flash"})
+                triggers.append({"beat": beat, "type": "shake"})
+
+            elif slot['type'] == 'portal_cube':
+                pass  # Not in ship, ignore
+
+        else:
+            # SHIP SECTION: tight corridors with ceiling/floor spikes
+            if slot['type'] == 'portal_cube':
+                objects.append({"beat": beat, "type": "portal_cube"})
+                in_ship = False
+                triggers.append({"beat": beat, "type": "flash"})
+                triggers.append({"beat": beat, "type": "shake"})
+            else:
+                h = 2 + (i % 6)
+                objects.append({"beat": beat, "type": "block", "h": h})
+                objects.append({"beat": beat, "type": "spike", "y": h})
+                # Alternating ceiling obstacles
+                if i % 2 == 0:
+                    ceil_h = 8 - (i % 4)
+                    objects.append({"beat": beat + 0.5, "type": "block", "h": ceil_h})
+                    objects.append({"beat": beat + 0.5, "type": "spike", "y": ceil_h})
+
         beat += BEAT_STEP
 
-    # Color triggers at section boundaries
-    section_beats = [BEAT_START + N_SLOTS * f for f in [0.0, 0.25, 0.5, 0.75]]
-    colors = [
-        ([5, 0, 15], [20, 0, 40]),
-        ([0, 5, 20], [0, 20, 60]),
-        ([15, 0, 5], [50, 0, 20]),
-        ([10, 0, 0], [40, 0, 0]),
-    ]
-    for sb, (bg, gnd) in zip(section_beats, colors):
-        triggers.append({"beat": sb, "type": "color", "bg": bg, "ground": gnd})
-        triggers.append({"beat": sb, "type": "flash"})
+    # Close ship if still open
+    if in_ship:
+        objects.append({"beat": beat, "type": "portal_cube"})
+        triggers.append({"beat": beat, "type": "flash"})
 
-    # Shake at portals
-    for obj in objects:
-        if 'portal' in obj['type']:
-            triggers.append({"beat": obj['beat'], "type": "shake"})
+    # Color triggers at section boundaries
+    section_colors = [
+        (0.0, [5, 0, 15], [20, 0, 40]),
+        (0.25, [15, 0, 5], [50, 0, 20]),
+        (0.5, [0, 0, 20], [0, 0, 60]),
+        (0.75, [10, 0, 0], [40, 0, 0]),
+    ]
+    for frac, bg, gnd in section_colors:
+        b = BEAT_START + len(slots) * frac * BEAT_STEP
+        triggers.append({"beat": b, "type": "color", "bg": bg, "ground": gnd})
+        triggers.append({"beat": b, "type": "flash"})
+        triggers.append({"beat": b, "type": "shake"})
 
     level = {
         "meta": {
             "name": "QUANTUM COLLAPSE",
-            "author": "Rigetti Cepheus 108Q QPU",
+            "author": "Rigetti Cepheus 106Q QPU",
             "song": "audio/the-other-side.mp3",
             "bpm": 150,
             "offset": 0.05,
