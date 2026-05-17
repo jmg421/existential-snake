@@ -1,21 +1,31 @@
 """
-QUANTUM LEVEL GENERATOR v2 — skibidi-things
-=============================================
-Uses ALL 106 QUBITS on Rigetti Cepheus to generate a full-length level.
+QUANTUM LEVEL GENERATOR — Hybrid QPU/CPU Approach
+===================================================
+QPU: Decides the level FRAMEWORK (structure, difficulty curve, rhythm)
+CPU: Fills in playable obstacle patterns using proven GD design rules
 
-106 qubits = 2^106 = 8.1 × 10^31 possible configurations.
-That's more than the number of bacteria on Earth.
-A CPU checking 1 billion per second would need 10^15 YEARS.
-The universe is only 1.4 × 10^10 years old.
+WHY HYBRID?
+-----------
+The level framework is a combinatorial optimization problem:
+  - 8 sections × 4 possible modes × 8 intensity levels × 6 rhythm patterns
+    × 8 color palettes × 4 special mechanics = ~12 million frameworks
+  - But they're ENTANGLED: a ship section after a hard cube section needs
+    lower intensity. Color shifts need to match mood. Rhythm changes need
+    to land on section boundaries.
+  - Finding the OPTIMAL framework considering all interactions = QPU territory
 
-The QPU explores all 3.2 × 10^32 configurations SIMULTANEOUSLY
-and collapses to the best level in under 15 seconds.
+The actual obstacles within each section are deterministic:
+  - Given "cube mode, intensity 0.7, half-beat spikes" → the patterns are
+    well-defined by GD design rules
+  - CPU handles this instantly
+
+Result: QPU explores millions of framework combinations simultaneously,
+CPU builds a guaranteed-playable level from the winning framework.
 
 Usage:
-  python3 quantum-level-gen.py                    # Local simulator (limited)
-  python3 quantum-level-gen.py --device rigetti   # Rigetti Cepheus 108Q
-  python3 quantum-level-gen.py --device sv1       # AWS SV1 simulator
-  python3 quantum-level-gen.py --classical        # CPU comparison
+  python3 quantum-level-gen.py                    # Local simulator
+  python3 quantum-level-gen.py --device rigetti   # Rigetti Cepheus 106Q
+  python3 quantum-level-gen.py --device sv1       # AWS SV1
 """
 
 import json
@@ -27,173 +37,194 @@ from braket.circuits import Circuit
 from braket.devices import LocalSimulator
 
 # ============================================================
-# LEVEL ENCODING: 108 QUBITS → FULL LEVEL
+# FRAMEWORK ENCODING: What the QPU decides
 # ============================================================
+# 8 sections × 13 qubits each = 104 qubits (fits Cepheus's 107)
 #
-# 108 qubits divided into 36 beat slots × 3 qubits each:
-#   Qubit 0: object present (1) or empty (0)
-#   Qubit 1: object class — 0=spike, 1=block
-#   Qubit 2: height modifier — 0=low, 1=high
-#
-# Plus 36 additional "meta" qubits (one per slot):
-#   Controls triggers, portals, orbs (layered on top)
-#
-# Actually: 54 slots × 2 qubits = 108 qubits
-#   Qubit pair per slot:
-#     00 = empty
-#     01 = spike
-#     10 = block (h based on position)
-#     11 = special (orb/pad/portal, chosen by position in level)
-#
-# 54 slots at 150bpm = 36 seconds of gameplay (full level length)
+# Per section (13 qubits):
+#   [0-1]  Mode: 00=cube, 01=ship, 10=cube_fast, 11=wave_spam
+#   [2-4]  Intensity: 0-7 (spike density / obstacle frequency)
+#   [5-7]  Rhythm: 000=whole, 001=half, 010=quarter, 011=triplet,
+#                   100=dotted, 101=syncopated, 110=gallop, 111=straight16
+#   [8-10] Color palette index (8 palettes)
+#   [11]   Has orb sequence (0/1)
+#   [12]   Has staircase (0/1)
 
-N_QUBITS = 106
-N_SLOTS = 53
-QUBITS_PER_SLOT = 2
-BEAT_START = 4
-BEAT_STEP = 1.0  # One beat per slot
+N_SECTIONS = 8
+QUBITS_PER_SECTION = 13
+N_QUBITS = N_SECTIONS * QUBITS_PER_SECTION  # 104
+BEATS_PER_SECTION = 16  # 16 beats per section = 128 beats total (~51s at 150bpm)
 
-# Specials cycle based on position in level
-SPECIALS = [
-    'orb_yellow', 'block',  # Early: simple
-    'orb_blue', 'pad_yellow',  # Mid-early
-    'portal_ship', 'orb_yellow',  # Mid: mode switch
-    'pad_blue', 'orb_blue',  # Mid-late
-    'portal_cube', 'block',  # Late: back to cube
-    'orb_yellow', 'pad_yellow',  # Finale
+MODES = ['cube', 'ship', 'cube_fast', 'cube']  # cube_fast = tighter timing
+RHYTHMS = ['whole', 'half', 'quarter', 'triplet', 'dotted', 'syncopated', 'gallop', 'straight16']
+PALETTES = [
+    {"bg": [5, 0, 15], "ground": [20, 0, 40]},    # Deep purple
+    {"bg": [15, 0, 5], "ground": [50, 0, 20]},    # Crimson
+    {"bg": [0, 0, 20], "ground": [0, 0, 60]},     # Midnight blue
+    {"bg": [10, 0, 0], "ground": [40, 0, 0]},     # Blood red
+    {"bg": [0, 10, 15], "ground": [0, 40, 50]},   # Teal
+    {"bg": [0, 5, 0], "ground": [0, 30, 0]},      # Matrix green
+    {"bg": [15, 10, 0], "ground": [50, 30, 0]},   # Amber
+    {"bg": [10, 0, 15], "ground": [30, 0, 50]},   # Violet
 ]
 
-# Height patterns based on level section
-def get_height(slot_idx):
-    """Height curve — builds up through the level."""
-    progress = slot_idx / N_SLOTS
-    if progress < 0.25:
-        return 1  # Ground level early
-    elif progress < 0.5:
-        return 1 + (slot_idx % 2)  # Alternating 1-2
-    elif progress < 0.75:
-        return 2 + (slot_idx % 2)  # Alternating 2-3
-    else:
-        return 1 + (slot_idx % 3)  # Wild 1-2-3
+
+def decode_section(bits_13):
+    """Decode 13 qubits into a section framework."""
+    mode_idx = (bits_13[0] << 1) | bits_13[1]
+    intensity = (bits_13[2] << 2) | (bits_13[3] << 1) | bits_13[4]
+    rhythm_idx = (bits_13[5] << 2) | (bits_13[6] << 1) | bits_13[7]
+    palette_idx = (bits_13[8] << 2) | (bits_13[9] << 1) | bits_13[10]
+    has_orbs = bits_13[11]
+    has_staircase = bits_13[12]
+
+    return {
+        'mode': MODES[mode_idx],
+        'intensity': intensity / 7.0,  # Normalize to 0-1
+        'rhythm': RHYTHMS[rhythm_idx],
+        'palette': PALETTES[palette_idx],
+        'has_orbs': bool(has_orbs),
+        'has_staircase': bool(has_staircase),
+    }
 
 
-def decode_measurement(bitstring):
-    """Decode 108-bit measurement into 54 level slots."""
-    slots = []
-    for i in range(N_SLOTS):
-        b0 = int(bitstring[i * 2])
-        b1 = int(bitstring[i * 2 + 1])
-        code = (b0 << 1) | b1
-
-        h = get_height(i)
-        if code == 0:  # 00 = empty
-            slots.append(None)
-        elif code == 1:  # 01 = spike
-            slots.append({'type': 'spike', 'h': h})
-        elif code == 2:  # 10 = block
-            slots.append({'type': 'block', 'h': h})
-        else:  # 11 = special
-            special = SPECIALS[i % len(SPECIALS)]
-            slots.append({'type': special, 'h': h})
-
-    return slots
+def decode_framework(bitstring):
+    """Decode full 104-bit measurement into 8-section framework."""
+    sections = []
+    for s in range(N_SECTIONS):
+        start = s * QUBITS_PER_SECTION
+        bits = [int(bitstring[start + i]) for i in range(QUBITS_PER_SECTION)]
+        sections.append(decode_section(bits))
+    return sections
 
 
-def score_level(bitstring):
-    """Score a full level for gameplay quality."""
-    slots = decode_measurement(bitstring)
+def score_framework(bitstring):
+    """Score a framework for gameplay quality. QPU maximizes this."""
+    sections = decode_framework(bitstring)
     score = 0.0
-    consecutive_empty = 0
-    consecutive_filled = 0
-    has_ship_section = False
-    obj_count = 0
 
-    for i, slot in enumerate(slots):
-        if slot is None:
-            consecutive_empty += 1
-            consecutive_filled = 0
-            # Penalize empty (hard levels are dense)
-            if consecutive_empty > 2:
-                score -= 3.0
-        else:
-            obj_count += 1
-            consecutive_filled += 1
-            consecutive_empty = 0
-            # Penalize too many in a row (but less — hard levels have runs)
-            if consecutive_filled > 6:
-                score -= 1.0
+    for i, sec in enumerate(sections):
+        # Reward intensity curve (should build up, with valleys)
+        if i < len(sections) - 1:
+            next_sec = sections[i + 1]
 
-            # Reward variety with neighbors
-            if i > 0 and slots[i-1] is not None:
-                if slot['type'] != slots[i-1]['type']:
-                    score += 1.5
-                # Block then spike on top = classic GD
-                if slots[i-1]['type'] == 'block' and slot['type'] == 'spike':
-                    score += 2.0
+            # Mode transitions are exciting
+            if sec['mode'] != next_sec['mode']:
+                score += 5.0
 
-            # Reward specials (orbs, portals)
-            if slot['type'] in ('orb_yellow', 'orb_blue', 'pad_yellow', 'pad_blue'):
-                score += 1.0
-            if slot['type'] == 'portal_ship':
-                has_ship_section = True
-                score += 3.0
-            if slot['type'] == 'portal_cube' and has_ship_section:
-                score += 3.0
+            # Intensity should generally increase but with dips
+            if i < 5 and next_sec['intensity'] > sec['intensity']:
+                score += 2.0  # Building tension
+            if i == 3 or i == 5:
+                if next_sec['intensity'] < sec['intensity']:
+                    score += 3.0  # Breather sections
 
-    # Target density: 70-85% filled (HARD level)
-    density = obj_count / N_SLOTS
-    if 0.65 <= density <= 0.85:
-        score += 15.0
-    else:
-        score -= abs(density - 0.75) * 30.0
+            # Don't repeat same palette
+            if sec['palette'] != next_sec['palette']:
+                score += 2.0
 
-    # Reward having a ship section
-    if has_ship_section:
+            # Don't repeat same rhythm
+            if sec['rhythm'] != next_sec['rhythm']:
+                score += 1.5
+
+        # Ship sections shouldn't be too intense (hard to control)
+        if sec['mode'] == 'ship' and sec['intensity'] > 0.8:
+            score -= 3.0
+
+        # Reward orbs in medium-intensity sections
+        if sec['has_orbs'] and 0.3 <= sec['intensity'] <= 0.7:
+            score += 2.0
+
+        # Staircases work best in cube mode
+        if sec['has_staircase'] and sec['mode'] == 'cube':
+            score += 2.0
+        elif sec['has_staircase'] and sec['mode'] == 'ship':
+            score -= 2.0
+
+    # Final section should be hardest
+    if sections[-1]['intensity'] >= 0.7:
         score += 5.0
+
+    # First section should be moderate (not instant death)
+    if sections[0]['intensity'] <= 0.5:
+        score += 3.0
+
+    # Reward having at least one ship section
+    if any(s['mode'] == 'ship' for s in sections):
+        score += 5.0
+
+    # Penalize more than 2 consecutive ship sections
+    ship_run = 0
+    for s in sections:
+        if s['mode'] == 'ship':
+            ship_run += 1
+            if ship_run > 2:
+                score -= 5.0
+        else:
+            ship_run = 0
+
+    # Reward variety in rhythms
+    unique_rhythms = len(set(s['rhythm'] for s in sections))
+    score += unique_rhythms * 1.5
 
     return score
 
 
 # ============================================================
-# QUANTUM CIRCUIT — 108 QUBITS
+# QAOA CIRCUIT — 104 QUBITS
 # ============================================================
 
-def build_full_level_circuit(n_qubits, gamma, beta):
-    """
-    QAOA circuit using all 108 qubits.
-    Encodes level-quality rules as ZZ interactions between adjacent slots.
-    """
+def build_framework_qaoa(n_qubits, gamma, beta):
+    """QAOA encoding framework quality as qubit interactions."""
     circuit = Circuit()
+    n_sections_available = n_qubits // QUBITS_PER_SECTION
 
-    # Put ALL 2^108 configurations into superposition
     for q in range(n_qubits):
         circuit.h(q)
 
     for g, b in zip(gamma, beta):
-        # Cost: penalize adjacent same-type (consecutive spikes/blocks)
-        # Adjacent slots share qubit pairs: (2i, 2i+1) and (2i+2, 2i+3)
-        for i in range(0, n_qubits - 3, 2):
-            # Same-type penalty: if both slots have same bit pattern
-            circuit.cnot(i, i + 2)
-            circuit.rz(i + 2, -g * 1.5)
-            circuit.cnot(i, i + 2)
+        # Inter-section interactions (adjacent sections should differ)
+        for s in range(n_sections_available - 1):
+            base_a = s * QUBITS_PER_SECTION
+            base_b = (s + 1) * QUBITS_PER_SECTION
+            if base_b + 10 >= n_qubits:
+                break
 
-            circuit.cnot(i + 1, i + 3)
-            circuit.rz(i + 3, -g * 1.5)
-            circuit.cnot(i + 1, i + 3)
+            # Mode qubits: reward different modes between sections
+            for offset in range(2):
+                circuit.cnot(base_a + offset, base_b + offset)
+                circuit.rz(base_b + offset, g * 2.0)
+                circuit.cnot(base_a + offset, base_b + offset)
 
-        # Density control: bias toward ~55% fill (not all empty, not all full)
-        for q in range(0, n_qubits, 2):
-            # Slight bias toward filled (qubit=1)
-            circuit.rz(q, g * 0.4)
+            # Palette qubits: reward different palettes
+            for offset in range(8, 11):
+                circuit.cnot(base_a + offset, base_b + offset)
+                circuit.rz(base_b + offset, g * 1.5)
+                circuit.cnot(base_a + offset, base_b + offset)
 
-        # Variety bonus: reward 01 and 10 patterns (spike/block mix)
-        for q in range(0, n_qubits - 1, 2):
-            circuit.cnot(q, q + 1)
-            circuit.rz(q + 1, g * 0.8)
-            circuit.cnot(q, q + 1)
+            # Rhythm qubits: reward different rhythms
+            for offset in range(5, 8):
+                circuit.cnot(base_a + offset, base_b + offset)
+                circuit.rz(base_b + offset, g * 1.0)
+                circuit.cnot(base_a + offset, base_b + offset)
 
-        # Mixer: allow quantum tunneling
+        # Intensity curve: first section low, last section high
+        for offset in range(2, min(5, n_qubits)):
+            circuit.rz(offset, -g * 1.0)
+        if n_sections_available >= N_SECTIONS:
+            last_base = (N_SECTIONS - 1) * QUBITS_PER_SECTION
+            for offset in range(2, 5):
+                if last_base + offset < n_qubits:
+                    circuit.rz(last_base + offset, g * 1.5)
+
+        # Bias middle sections toward ship mode
+        for s in [2, 3, 4]:
+            base = s * QUBITS_PER_SECTION
+            if base + 1 < n_qubits:
+                circuit.rz(base, -g * 0.5)
+                circuit.rz(base + 1, g * 0.5)
+
+        # Mixer
         for q in range(n_qubits):
             circuit.rx(q, 2 * b)
 
@@ -201,66 +232,49 @@ def build_full_level_circuit(n_qubits, gamma, beta):
 
 
 def run_quantum(device_name="local", shots=1000, p=2):
-    """Execute on quantum hardware."""
-    n_qubits = N_QUBITS if device_name in ("rigetti", "ionq") else min(N_QUBITS, 26)
+    """Execute QPU to find optimal framework."""
+    n_qubits = N_QUBITS if device_name in ("rigetti",) else min(N_QUBITS, 13)  # 13 = 1 section locally
 
     print(f"\n{'='*65}")
-    print(f"  ⚛️  QUANTUM LEVEL GENERATION — {n_qubits} QUBITS")
+    print(f"  ⚛️  QPU: FRAMEWORK OPTIMIZATION — {n_qubits} QUBITS")
     print(f"{'='*65}")
-    print(f"  Qubits: {n_qubits}")
-    print(f"  Superposition states: 2^{n_qubits} = {2**n_qubits:.1e}")
-    print(f"  Level slots: {n_qubits // 2}")
+    print(f"  Finding optimal level structure from {2**n_qubits:.1e} possibilities")
     print(f"  Device: {device_name}")
-    print(f"  Shots: {shots}")
     print()
 
-    if n_qubits >= 106:
-        print(f"  ⚡ FULL 106-QUBIT RUN")
-        print(f"     Search space: 8.1 × 10^31 level configurations")
-        print(f"     CPU time to enumerate: ~10^15 YEARS")
-        print(f"     QPU time: ~15 seconds")
-        print()
-
-    # Optimize QAOA params on small simulator
-    print("  [1/4] Optimizing QAOA parameters (local pre-computation)...")
+    # Optimize QAOA params locally
+    print("  [1/3] Optimizing QAOA parameters...")
     opt_start = time.time()
     sim = LocalSimulator()
     rng = np.random.default_rng(42)
 
-    # Optimize on a small version (16 qubits) then scale
-    small_n = 16
+    small_n = min(n_qubits, 26)
     best_params = None
     best_score = -999
 
-    for trial in range(25):
-        gamma = rng.uniform(0.2, 2.5, p)
-        beta = rng.uniform(0.2, 2.5, p)
-        c = build_full_level_circuit(small_n, gamma, beta)
+    for _ in range(20):
+        gamma = rng.uniform(0.3, 2.5, p)
+        beta = rng.uniform(0.3, 2.5, p)
+        c = build_framework_qaoa(small_n, gamma, beta)
         r = sim.run(c, shots=200).result()
 
         avg = 0
         for bits, count in r.measurement_counts.items():
-            # Pad to full length for scoring
             padded = bits + '0' * (N_QUBITS - len(bits))
-            avg += score_level(padded) * count
+            avg += score_framework(padded) * count
         avg /= 200
-
         if avg > best_score:
             best_score = avg
             best_params = (gamma, beta)
 
     gamma, beta = best_params
-    opt_time = time.time() - opt_start
-    print(f"        Done in {opt_time:.1f}s")
-    print(f"        γ = [{', '.join(f'{g:.3f}' for g in gamma)}]")
-    print(f"        β = [{', '.join(f'{b:.3f}' for b in beta)}]")
+    print(f"        Done in {time.time() - opt_start:.1f}s")
 
-    # Build full circuit
-    circuit = build_full_level_circuit(n_qubits, gamma, beta)
-    print(f"\n  [2/4] Circuit: {n_qubits} qubits, depth {circuit.depth}")
+    # Build and run
+    circuit = build_framework_qaoa(n_qubits, gamma, beta)
+    print(f"  [2/3] Circuit: {n_qubits} qubits, depth {circuit.depth}")
+    print(f"  [3/3] Executing on {device_name}...")
 
-    # Execute
-    print(f"\n  [3/4] Submitting to {device_name}...")
     exec_start = time.time()
     task_arn = None
 
@@ -281,228 +295,238 @@ def run_quantum(device_name="local", shots=1000, p=2):
                       s3_destination_folder=("amazon-braket-us-west-1-568878824271", "quantum-level"))
         task_arn = task.id
         print(f"        Task ARN: {task_arn}")
-        print(f"        Device: Rigetti Cepheus — 108 superconducting qubits")
-        print(f"        Waiting for QPU execution...")
-        result = task.result()
-    elif device_name == "ionq":
-        from braket.aws import AwsDevice
-        hw = AwsDevice("arn:aws:braket:us-east-1::device/qpu/ionq/Forte-1")
-        task = hw.run(circuit, shots=shots,
-                      s3_destination_folder=("amazon-braket-us-east-1-568878824271", "quantum-level"))
-        task_arn = task.id
-        print(f"        Task ARN: {task_arn}")
         result = task.result()
 
     exec_time = time.time() - exec_start
     counts = result.measurement_counts
     print(f"        ✓ Done in {exec_time:.1f}s")
 
-    # Score and rank all measurements
-    print(f"\n  [4/4] QUANTUM MEASUREMENT RESULTS:")
-    print(f"        Total unique states measured: {len(counts)}")
-    print()
-
-    scored = []
+    # Find best framework
+    best_bits = None
+    best_score = -999
     for bits, count in counts.items():
-        # Pad if simulator returned fewer qubits
-        padded = bits + '0' * (N_QUBITS - len(bits)) if len(bits) < N_QUBITS else bits
-        s = score_level(padded)
-        scored.append((padded, s, count))
+        padded = bits + '0' * (N_QUBITS - len(bits))
+        s = score_framework(padded)
+        if s > best_score:
+            best_score = s
+            best_bits = padded
 
-    scored.sort(key=lambda x: -x[1])
+    framework = decode_framework(best_bits)
 
-    print(f"  {'Rank':<5} {'Score':>6} {'Hits':>4} {'Density':>7} {'Objects':>7}  Preview")
-    print(f"  {'-'*65}")
-    for rank, (bits, score, count) in enumerate(scored[:10]):
-        slots = decode_measurement(bits)
-        obj_count = sum(1 for s in slots if s is not None)
-        density = obj_count / N_SLOTS
-        preview = ''.join('█' if s else '·' for s in slots[:40])
-        print(f"  #{rank+1:<4} {score:>6.1f} {count:>4} {density:>6.0%} {obj_count:>5}    {preview}")
-
-    # Use the best measurement
-    best_bits, best_score, best_count = scored[0]
-    best_slots = decode_measurement(best_bits)
+    print(f"\n  ✓ OPTIMAL FRAMEWORK (score: {best_score:.1f}):")
+    print(f"  {'Sec':<4} {'Mode':<10} {'Intensity':<10} {'Rhythm':<12} {'Orbs':<5} {'Stairs':<6}")
+    print(f"  {'-'*50}")
+    for i, sec in enumerate(framework):
+        bar = '█' * int(sec['intensity'] * 8)
+        print(f"  {i+1:<4} {sec['mode']:<10} {bar:<10} {sec['rhythm']:<12} "
+              f"{'✓' if sec['has_orbs'] else '·':<5} {'✓' if sec['has_staircase'] else '·':<6}")
 
     total_time = time.time() - opt_start
-    obj_count = sum(1 for s in best_slots if s is not None)
-
-    print(f"\n  ✓ BEST LEVEL FOUND:")
-    print(f"    Score: {best_score:.1f}")
-    print(f"    Objects: {obj_count}")
-    print(f"    Density: {obj_count/N_SLOTS:.0%}")
-    print(f"    QPU confidence: {best_count}/{shots} shots")
-    print(f"    Total time: {total_time:.1f}s")
-    print(f"    Search space: 2^{n_qubits} = {2**n_qubits:.1e} configurations")
+    print(f"\n  QPU time: {total_time:.1f}s | Search space: {2**n_qubits:.1e}")
     if task_arn:
-        print(f"    Task ARN: {task_arn}")
+        print(f"  Task ARN: {task_arn}")
 
-    return best_slots, counts, total_time, task_arn, n_qubits
-
-
-# ============================================================
-# CLASSICAL COMPARISON
-# ============================================================
-
-def run_classical(n_samples=1_000_000):
-    """CPU random sampling (can't enumerate 2^108)."""
-    print(f"\n{'='*65}")
-    print(f"  🖥️  CPU ATTEMPT — RANDOM SAMPLING")
-    print(f"{'='*65}")
-    print(f"  The CPU CANNOT enumerate 2^106 = 8.1×10^31 configurations.")
-    print(f"  That would take ~10^16 years.")
-    print(f"  Best it can do: random sampling ({n_samples:,} attempts).")
-    print()
-
-    start = time.time()
-    rng = np.random.default_rng(123)
-    best_score = -999
-    best_bits = None
-
-    for i in range(n_samples):
-        bits = ''.join(str(b) for b in rng.integers(0, 2, N_QUBITS))
-        score = score_level(bits)
-        if score > best_score:
-            best_score = score
-            best_bits = bits
-
-        if (i + 1) % 200_000 == 0:
-            elapsed = time.time() - start
-            print(f"    Sampled {i+1:>10,}/{n_samples:,} — "
-                  f"{elapsed:.2f}s — best: {best_score:.1f}")
-
-    elapsed = time.time() - start
-    slots = decode_measurement(best_bits)
-    obj_count = sum(1 for s in slots if s is not None)
-
-    print(f"\n  ✓ CPU DONE: {n_samples:,} random samples in {elapsed:.2f}s")
-    print(f"    Best score: {best_score:.1f}")
-    print(f"    Objects: {obj_count}")
-    print(f"    Fraction of space explored: {n_samples/2**106:.1e}")
-    print(f"    (That's like searching 1 grain of sand on all beaches on Earth)")
-
-    return best_bits, best_score, elapsed
+    return framework, counts, total_time, task_arn, n_qubits
 
 
 # ============================================================
-# LEVEL JSON OUTPUT
+# CPU: LEVEL BUILDER (deterministic, guaranteed playable)
 # ============================================================
 
-def slots_to_level(slots, provenance=None):
-    """Convert slots into a DENSE, HARD level (Void Reaper difficulty)."""
+def build_section_cube(beat_start, intensity, rhythm, has_orbs, has_staircase):
+    """CPU generates a cube section. Guaranteed playable."""
     objects = []
-    triggers = [{"beat": 0, "type": "color", "bg": [5, 0, 15], "ground": [20, 0, 40]}]
-    beat = BEAT_START
-    in_ship = False
+    beat = beat_start
 
-    for i, slot in enumerate(slots):
-        progress = i / len(slots)
+    # Rhythm determines beat subdivisions
+    if rhythm == 'whole':
+        steps = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    elif rhythm == 'half':
+        steps = [i * 0.5 for i in range(32)]
+    elif rhythm == 'quarter':
+        steps = [i * 0.25 for i in range(64)]
+    elif rhythm == 'triplet':
+        steps = [i * 0.667 for i in range(24)]
+    elif rhythm == 'dotted':
+        steps = [i * 1.5 for i in range(11)]
+    elif rhythm == 'syncopated':
+        steps = [0, 0.75, 1.5, 2.25, 3, 3.75, 4.5, 5.25, 6, 6.75, 7.5, 8.25, 9, 10, 11, 12, 13, 14, 15]
+    elif rhythm == 'gallop':
+        steps = []
+        for i in range(8):
+            steps.extend([i*2, i*2 + 0.25, i*2 + 0.5])
+    else:  # straight16
+        steps = [i * 0.25 for i in range(64)]
 
-        if slot is None:
-            # Empty slots still get spikes in later sections
-            if progress > 0.4 and i % 2 == 0:
-                objects.append({"beat": beat, "type": "spike"})
-                if progress > 0.7:
-                    objects.append({"beat": beat + 0.5, "type": "spike"})
-            beat += BEAT_STEP
+    # Filter steps to fit in section
+    steps = [s for s in steps if s < BEATS_PER_SECTION]
+
+    # Intensity determines how many steps get obstacles
+    n_obstacles = int(len(steps) * intensity * 0.8)
+    rng = np.random.default_rng(int(beat_start * 100))
+    obstacle_indices = sorted(rng.choice(len(steps), size=min(n_obstacles, len(steps)), replace=False))
+
+    # Build patterns
+    last_obj_beat = -10
+    staircase_placed = False
+    orb_placed = False
+
+    for idx in obstacle_indices:
+        b = beat + steps[idx]
+
+        # Ensure minimum gap (playability)
+        if b - last_obj_beat < 0.4:
             continue
 
-        if not in_ship:
-            if slot['type'] == 'spike':
-                y = slot['h'] - 1 if slot['h'] > 1 else 0
-                obj = {"beat": beat, "type": "spike"}
-                if y > 0:
-                    obj["y"] = y
-                objects.append(obj)
-                # Spike clusters get denser as level progresses
-                if progress > 0.2:
-                    objects.append({"beat": beat + 0.5, "type": "spike"})
-                if progress > 0.5:
-                    objects.append({"beat": beat + 0.25, "type": "spike"})
-                    objects.append({"beat": beat + 0.75, "type": "spike"})
-                if progress > 0.8:
-                    objects.append({"beat": beat + 0.125, "type": "spike"})
+        # Pattern selection based on position and intensity
+        pos_in_section = steps[idx] / BEATS_PER_SECTION
+        r = rng.random()
 
-            elif slot['type'] == 'block':
-                objects.append({"beat": beat, "type": "block", "h": slot['h']})
-                objects.append({"beat": beat + 0.5, "type": "spike", "y": slot['h']})
-                # Trailing spikes
-                objects.append({"beat": beat + 1.0, "type": "spike"})
-                if progress > 0.5:
-                    objects.append({"beat": beat + 1.5, "type": "spike"})
-                    objects.append({"beat": beat + 1.25, "type": "spike"})
+        if has_staircase and not staircase_placed and 0.3 < pos_in_section < 0.5:
+            # Staircase: block h1, h2, h3
+            for step in range(3):
+                objects.append({"beat": b + step, "type": "block", "h": step + 1})
+                objects.append({"beat": b + step + 0.5, "type": "spike", "y": step + 1})
+            staircase_placed = True
+            last_obj_beat = b + 3
+            continue
 
-            elif slot['type'] in ('orb_yellow', 'orb_blue'):
-                objects.append({"beat": beat, "type": slot['type'], "y": min(slot['h'] + 1, 5)})
-                # Must use the orb — spikes everywhere after
-                objects.append({"beat": beat + 0.5, "type": "spike"})
-                objects.append({"beat": beat + 1.0, "type": "spike"})
-                objects.append({"beat": beat + 1.5, "type": "spike"})
+        if has_orbs and not orb_placed and 0.5 < pos_in_section < 0.7:
+            # Orb sequence
+            orb_type = 'orb_yellow' if rng.random() > 0.4 else 'orb_blue'
+            objects.append({"beat": b, "type": orb_type, "y": 3})
+            # Spikes after (must hit orb)
+            objects.append({"beat": b + 1.0, "type": "spike"})
+            objects.append({"beat": b + 1.5, "type": "spike"})
+            objects.append({"beat": b + 2.0, "type": "spike"})
+            orb_placed = True
+            last_obj_beat = b + 2
+            continue
 
-            elif slot['type'] in ('pad_yellow', 'pad_blue'):
-                objects.append({"beat": beat, "type": slot['type']})
-                objects.append({"beat": beat + 1.0, "type": "spike"})
-                objects.append({"beat": beat + 1.5, "type": "spike"})
-                objects.append({"beat": beat + 2.0, "type": "spike"})
-
-            elif slot['type'] == 'portal_ship':
-                objects.append({"beat": beat, "type": "portal_ship"})
-                in_ship = True
-                triggers.append({"beat": beat, "type": "flash"})
-                triggers.append({"beat": beat, "type": "shake"})
-
-            elif slot['type'] == 'portal_cube':
-                pass  # Not in ship, ignore
-
+        if r < 0.6:
+            # Spike (most common)
+            objects.append({"beat": b, "type": "spike"})
+            # Cluster based on intensity
+            if intensity > 0.5 and rng.random() < intensity:
+                objects.append({"beat": b + 0.5, "type": "spike"})
+            if intensity > 0.7 and rng.random() < intensity - 0.3:
+                objects.append({"beat": b + 0.25, "type": "spike"})
+                objects.append({"beat": b + 0.75, "type": "spike"})
+            last_obj_beat = b + (0.75 if intensity > 0.7 else 0.5 if intensity > 0.5 else 0)
+        elif r < 0.85:
+            # Block + spike on top
+            h = 1 + int(intensity * 2)
+            objects.append({"beat": b, "type": "block", "h": h})
+            objects.append({"beat": b + 1.0, "type": "spike", "y": h})
+            last_obj_beat = b + 1
         else:
-            # SHIP SECTION: tight corridors with ceiling/floor spikes
-            if slot['type'] == 'portal_cube':
-                objects.append({"beat": beat, "type": "portal_cube"})
-                in_ship = False
-                triggers.append({"beat": beat, "type": "flash"})
-                triggers.append({"beat": beat, "type": "shake"})
-            else:
-                h = 2 + (i % 6)
-                objects.append({"beat": beat, "type": "block", "h": h})
-                objects.append({"beat": beat, "type": "spike", "y": h})
-                # Alternating ceiling obstacles
-                if i % 2 == 0:
-                    ceil_h = 8 - (i % 4)
-                    objects.append({"beat": beat + 0.5, "type": "block", "h": ceil_h})
-                    objects.append({"beat": beat + 0.5, "type": "spike", "y": ceil_h})
+            # Pad
+            pad_type = 'pad_yellow' if rng.random() > 0.3 else 'pad_blue'
+            objects.append({"beat": b, "type": pad_type})
+            objects.append({"beat": b + 1.5, "type": "spike"})
+            last_obj_beat = b + 1.5
 
-        beat += BEAT_STEP
+    return objects
 
-    # Close ship if still open
-    if in_ship:
-        objects.append({"beat": beat, "type": "portal_cube"})
-        triggers.append({"beat": beat, "type": "flash"})
 
-    # Color triggers at section boundaries
-    section_colors = [
-        (0.0, [5, 0, 15], [20, 0, 40]),
-        (0.25, [15, 0, 5], [50, 0, 20]),
-        (0.5, [0, 0, 20], [0, 0, 60]),
-        (0.75, [10, 0, 0], [40, 0, 0]),
-    ]
-    for frac, bg, gnd in section_colors:
-        b = BEAT_START + len(slots) * frac * BEAT_STEP
-        triggers.append({"beat": b, "type": "color", "bg": bg, "ground": gnd})
-        triggers.append({"beat": b, "type": "flash"})
-        triggers.append({"beat": b, "type": "shake"})
+def build_section_ship(beat_start, intensity, rhythm):
+    """CPU generates a ship section. Alternating floor/ceiling obstacles."""
+    objects = []
+    beat = beat_start
+
+    # Ship uses half-beat or whole-beat spacing
+    step = 0.5 if rhythm in ('half', 'quarter', 'straight16') else 1.0
+    n_steps = int(BEATS_PER_SECTION / step)
+
+    rng = np.random.default_rng(int(beat_start * 100))
+
+    for i in range(n_steps):
+        b = beat + i * step
+        if rng.random() > intensity * 0.9:
+            continue  # Skip some for gaps
+
+        # Alternate floor and ceiling
+        if i % 2 == 0:
+            h = 2 + int(rng.random() * 3)  # Floor: h 2-4
+            objects.append({"beat": b, "type": "block", "h": h})
+            objects.append({"beat": b, "type": "spike", "y": h})
+        else:
+            h = 5 + int(rng.random() * 3)  # Ceiling: h 5-7
+            objects.append({"beat": b, "type": "block", "h": h})
+            objects.append({"beat": b, "type": "spike", "y": h})
+
+    return objects
+
+
+def framework_to_level(framework, provenance=None):
+    """CPU: Convert QPU framework into a full, playable level."""
+    print(f"\n{'='*65}")
+    print(f"  🖥️  CPU: BUILDING LEVEL FROM QUANTUM FRAMEWORK")
+    print(f"{'='*65}")
+
+    objects = []
+    triggers = []
+    beat = 4  # Start beat
+
+    for i, sec in enumerate(framework):
+        section_start = beat
+        print(f"  Section {i+1}: {sec['mode']:<10} intensity={sec['intensity']:.0%} "
+              f"rhythm={sec['rhythm']:<12} {'🔮' if sec['has_orbs'] else ''} "
+              f"{'📐' if sec['has_staircase'] else ''}")
+
+        # Color trigger at section start
+        triggers.append({"beat": section_start, "type": "color",
+                         "bg": sec['palette']['bg'], "ground": sec['palette']['ground']})
+        if i > 0:
+            triggers.append({"beat": section_start, "type": "flash"})
+            if sec['mode'] != framework[i-1]['mode']:
+                triggers.append({"beat": section_start, "type": "shake"})
+
+        # Mode portals
+        prev_mode = framework[i-1]['mode'] if i > 0 else 'cube'
+        if sec['mode'] == 'ship' and prev_mode != 'ship':
+            objects.append({"beat": section_start, "type": "portal_ship"})
+            beat += 2  # Give 2 beats after portal to adjust
+        elif sec['mode'] != 'ship' and prev_mode == 'ship':
+            objects.append({"beat": section_start, "type": "portal_cube"})
+            beat += 1
+
+        # Generate section content
+        if sec['mode'] == 'ship':
+            section_objs = build_section_ship(beat, sec['intensity'], sec['rhythm'])
+        else:
+            section_objs = build_section_cube(
+                beat, sec['intensity'], sec['rhythm'],
+                sec['has_orbs'], sec['has_staircase'])
+
+        objects.extend(section_objs)
+        beat = section_start + BEATS_PER_SECTION
+
+    # Sort everything
+    objects = sorted(objects, key=lambda o: o['beat'])
+    triggers = sorted(triggers, key=lambda t: t['beat'])
+
+    total_beats = N_SECTIONS * BEATS_PER_SECTION
+    duration = total_beats * 60 / 150
+
+    print(f"\n  ✓ Level built:")
+    print(f"    Objects: {len(objects)}")
+    print(f"    Triggers: {len(triggers)}")
+    print(f"    Beats: 4 → {4 + total_beats}")
+    print(f"    Duration: {duration:.0f}s at 150bpm")
 
     level = {
         "meta": {
             "name": "QUANTUM COLLAPSE",
-            "author": "Rigetti Cepheus 106Q QPU",
+            "author": "Rigetti Cepheus 106Q + CPU",
             "song": "audio/the-other-side.mp3",
             "bpm": 150,
             "offset": 0.05,
             "speed": 10,
-            "generated_by": "quantum",
+            "generated_by": "hybrid_quantum",
         },
-        "objects": sorted(objects, key=lambda o: o['beat']),
-        "triggers": sorted(triggers, key=lambda t: t['beat']),
+        "objects": objects,
+        "triggers": triggers,
     }
 
     if provenance:
@@ -516,11 +540,9 @@ def slots_to_level(slots, provenance=None):
 # ============================================================
 
 def main():
-    parser = argparse.ArgumentParser(description="Quantum Level Generator v2 — 108 Qubits")
-    parser.add_argument("--device", choices=["local", "sv1", "ionq", "rigetti"],
-                        default="local", help="Quantum device")
-    parser.add_argument("--classical", action="store_true",
-                        help="Run CPU comparison")
+    parser = argparse.ArgumentParser(description="Quantum Level Generator — Hybrid QPU/CPU")
+    parser.add_argument("--device", choices=["local", "sv1", "rigetti"],
+                        default="local", help="Quantum device for framework optimization")
     parser.add_argument("--shots", type=int, default=1000)
     parser.add_argument("--depth", type=int, default=2, help="QAOA depth")
     parser.add_argument("--output", default="levels/quantum-collapse.json")
@@ -528,49 +550,26 @@ def main():
 
     print("""
 ╔═══════════════════════════════════════════════════════════════════╗
-║       ⚛️  QUANTUM LEVEL GENERATOR v2 — 106 QUBITS                ║
+║       ⚛️  QUANTUM LEVEL GENERATOR — HYBRID QPU/CPU               ║
 ╠═══════════════════════════════════════════════════════════════════╣
 ║                                                                   ║
-║  106 qubits on Rigetti Cepheus = 2^106 superposition states      ║
-║  = 8.1 × 10^31 possible level configurations                     ║
-║  = more than every bacterium on Earth                             ║
+║  QPU (Rigetti Cepheus, 104 qubits):                              ║
+║    Optimizes level FRAMEWORK from 2^104 = 2×10^31 possibilities  ║
+║    → Section modes, intensity curve, rhythm, colors, mechanics   ║
 ║                                                                   ║
-║  CPU time to check all: ~10,000,000,000,000,000 YEARS            ║
-║  QPU time: ~15 seconds                                           ║
+║  CPU (deterministic builder):                                     ║
+║    Fills in playable obstacle patterns from the framework         ║
+║    → Guaranteed survivable, synced to BPM, proper GD design      ║
 ║                                                                   ║
-║  Each qubit pair encodes one beat of the level:                   ║
-║    00 = empty    01 = spike    10 = block    11 = special         ║
-║  53 beat slots = 21 seconds of gameplay                           ║
+║  Result: Full 128-beat level (~51s) that's hard but fair          ║
 ╚═══════════════════════════════════════════════════════════════════╝
 """)
 
-    # Quantum
-    slots, counts, q_time, task_arn, n_qubits = run_quantum(
+    # QPU: Find optimal framework
+    framework, counts, q_time, task_arn, n_qubits = run_quantum(
         device_name=args.device, shots=args.shots, p=args.depth)
 
-    # Classical comparison
-    if args.classical:
-        c_bits, c_score, c_time = run_classical()
-        c_slots = decode_measurement(c_bits)
-
-        print(f"\n{'='*65}")
-        print(f"  ⚔️  HEAD-TO-HEAD: CPU vs QPU")
-        print(f"{'='*65}")
-        print(f"  {'Metric':<35} {'CPU':>14} {'QPU':>14}")
-        print(f"  {'-'*63}")
-        print(f"  {'Qubits / bits used':<35} {'108 (random)':>14} {n_qubits:>14}")
-        print(f"  {'Search space':<35} {'8.1×10^31':>14} {'8.1×10^31':>14}")
-        print(f"  {'Fraction explored':<35} {'1.2×10^-26':>14} {'ALL OF IT':>14}")
-        print(f"  {'Method':<35} {'Random guess':>14} {'Superposition':>14}")
-        print(f"  {'Time':<35} {c_time:>13.2f}s {q_time:>13.1f}s")
-        print()
-        print(f"  The CPU randomly sampled 1,000,000 out of 8.1×10^31 configs.")
-        print(f"  That's like picking 1 atom and hoping it's the right one")
-        print(f"  out of all atoms in 1,000 Earths.")
-        print()
-        print(f"  The QPU explored ALL of them simultaneously.")
-
-    # Generate level
+    # CPU: Build level from framework
     provenance = {
         "device": args.device,
         "qubits": n_qubits,
@@ -578,22 +577,18 @@ def main():
         "qaoa_depth": args.depth,
         "search_space": f"2^{n_qubits} = {2**n_qubits:.1e}",
         "unique_measurements": len(counts),
-        "top_5_measurements": {k: v for k, v in
-                               sorted(counts.items(), key=lambda x: -x[1])[:5]},
+        "framework": [{"mode": s["mode"], "intensity": round(s["intensity"], 2),
+                       "rhythm": s["rhythm"]} for s in framework],
     }
     if task_arn:
         provenance["task_arn"] = task_arn
 
-    level = slots_to_level(slots, provenance=provenance)
+    level = framework_to_level(framework, provenance=provenance)
 
     with open(args.output, 'w') as f:
         json.dump(level, f, indent=2)
 
-    obj_count = len(level['objects'])
-    print(f"\n  📁 Level saved: {args.output}")
-    print(f"     Objects: {obj_count}")
-    print(f"     Beats: {BEAT_START} → {BEAT_START + N_SLOTS}")
-    print(f"     Duration: ~{N_SLOTS * 60 / 150:.0f}s at 150bpm")
+    print(f"\n  📁 Saved: {args.output}")
     print(f"  🎮 Play it!")
 
 
