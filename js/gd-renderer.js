@@ -190,6 +190,18 @@ export function render(ctx, state) {
       ctx.font = 'bold 14px monospace';
       ctx.textAlign = 'center';
       ctx.fillText(obj.type === 'portal_ship' ? '▷' : '□', bx + 20, by + UNIT * 2);
+
+    } else if (obj.type === 'portal_speed') {
+      const bx = sx | 0, by = toY(3) | 0;
+      ctx.fillStyle = '#ff022';
+      ctx.fillRect(bx + 8, by, 24, UNIT * 3 | 0);
+      ctx.strokeStyle = '#ff0';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(bx + 8, by, 24, UNIT * 3 | 0);
+      ctx.fillStyle = '#ff0';
+      ctx.font = 'bold 16px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('⚡', bx + 20, by + UNIT * 1.5);
     }
   }
 

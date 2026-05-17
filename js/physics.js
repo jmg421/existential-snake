@@ -26,6 +26,8 @@ export function createPlayer() {
     lastOrbColor: null,
     mode: 'cube', // 'cube' or 'ship'
     holding: false, // is input held (for ship mode)
+    speed: 0, // 0 = use level default
+    _lastSpeed: 0,
   };
 }
 
@@ -258,8 +260,22 @@ export function collide(player, objects, scrollX) {
         }
       }
     }
+
+    // Speed portals
+    if (obj.type === 'portal_speed') {
+      if (pR > ox && pL < ox + 1 && pT > -1 && pB < 12) {
+        if (!player.activatedObjects.has(objId)) {
+          player.activatedObjects.add(objId);
+          player.speed = obj.speed || 13;
+        }
+      }
+    }
   }
 
+  if (player.speed && player.speed !== player._lastSpeed) {
+    player._lastSpeed = player.speed;
+    return 'speed_change';
+  }
   return padResult ? 'pad_' + padResult : null;
 }
 
@@ -284,4 +300,6 @@ export function resetPlayer(player) {
   player.lastOrbColor = null;
   player.mode = 'cube';
   player.holding = false;
+  player.speed = 0;
+  player._lastSpeed = 0;
 }

@@ -6,7 +6,7 @@ import { importGDLevel } from './gd-import.js';
 import { playJump, playDeath, playLand, playOrb, playPad, playCheckpoint, playComplete, playRestart } from './sfx.js';
 import * as P from './particles.js';
 
-const VERSION = 'ce0381e';
+const VERSION = '153f516';
 
 let level = null;
 let player = createPlayer();
@@ -21,6 +21,9 @@ let checkpoint = 0, checkpointMsg = '', checkpointMsgTimer = 0;
 let worldObjects = [], levelEndBeat = 0;
 let trailTimer = 0;
 let invincibleFrames = 0;
+let speedMultiplier = 1.0;
+let speedChangeOffset = 0;
+let speedChangeTime = 0;
 
 const canvas = document.getElementById('c');
 canvas.width = CW; canvas.height = CH;
@@ -92,6 +95,7 @@ function restartLevel() {
     if (first) { bg = [...first.bg]; gnd = [...first.ground]; targetBg = [...first.bg]; targetGnd = [...first.ground]; }
   }
   flash = 0; shake = 0;
+  speedMultiplier = 1.0; speedChangeOffset = 0; speedChangeTime = 0;
   attempts++;
   invincibleFrames = 3;
   playRestart();
@@ -114,7 +118,8 @@ function frame(now) {
   }
 
   const currentBeat = beat();
-  const scrollX = songTime() * level.meta.speed * UNIT * getBpm() / 60;
+  const baseSpeed = level.meta.speed * UNIT * getBpm() / 60;
+  const scrollX = speedChangeOffset + (songTime() - speedChangeTime) * baseSpeed * speedMultiplier;
   const songPct = Math.min(1, currentBeat / levelEndBeat);
 
   // Checkpoint (cosmetic — track best progress, always restart from 0)
@@ -150,6 +155,11 @@ function frame(now) {
     if (result === 'death' || checkFall(player)) {
       console.log('DEATH at beat', currentBeat.toFixed(1), 'scrollX', scrollX.toFixed(0), 'y', player.y.toFixed(2), 'vy', player.vy.toFixed(2), 'attempt', attempts, 'freezeFrames', deathFreezeFrames);
       die();
+    } else if (result === 'speed_change') {
+      // Accumulate offset so scroll doesn't jump
+      speedChangeOffset = scrollX;
+      speedChangeTime = songTime();
+      speedMultiplier = player.speed / level.meta.speed;
     } else if (result && result.startsWith('pad_')) {
       const color = result.split('_')[1];
       playPad(color);
@@ -177,7 +187,7 @@ function frame(now) {
 
 function buildState() {
   return {
-    player, scrollX: started ? songTime() * (level?.meta.speed || 8) * UNIT * getBpm() / 60 : 0,
+    player, scrollX: started ? speedChangeOffset + (songTime() - speedChangeTime) * (level?.meta.speed || 8) * UNIT * getBpm() / 60 * speedMultiplier : 0,
     level, objects: worldObjects, triggers: level?.triggers || [],
     flash: Math.max(0, flash), flashColor,
     shake: shake > 0.5 ? shake : 0, attempts,
