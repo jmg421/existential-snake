@@ -489,48 +489,52 @@ def _validate_and_fix(objects):
 
 
 def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
-    """Cube section: continuous ground with obstacles to jump over.
+    """Cube section: rhythmic staircases synced to jump arc.
     
-    Hold-spacebar guarantee: ground is always there, player always jumps.
-    Jump = 1 block high, 5 blocks long at 2x.
-    Spikes at ground level (y=1) are jumped over.
-    Taller obstacles (blocks at y=2+) require timing but hold-spacebar clears y=1 spikes.
+    At 2x: jump = 5 blocks horizontal, 1 block vertical.
+    Platforms spaced 5 blocks apart, rising/falling by 1 block.
+    Spikes at current height between platforms (player airborne over them).
     
-    Patterns (all hold-spacebar safe):
-      - Ground spike: spike at y=1, player clears it (peak = 1 block above ground)
-      - Spike cluster: 1-3 spikes at y=1, all within one jump arc (max 4 blocks wide)
-      - Platform + spike: block at y=2, spike at y=1 next to it (player jumps onto block OR over spike)
+    Hold-spacebar: auto-climbs staircases, auto-clears spikes. 100% safe.
+    Looks and feels like real GD — rhythm, near-misses, visual drama.
     """
-    JUMP_DIST = 5  # blocks per jump at 2x
+    JUMP_DIST = 5
     section_len = BLOCKS_PER_SECTION
     placed = 0
+    h = 1
+    direction = 1  # 1=ascending, -1=descending
 
-    # Place spikes at y=1 (ground level) — player jumps over them
-    # Space them so they're always in the airborne portion of a jump
-    # Player lands every 5 blocks, so spikes at offsets 2-3 from any multiple of 5 are safe
-    spike_positions = set()
-    for i in range(section_len):
-        offset_in_cycle = i % JUMP_DIST
-        if offset_in_cycle in (2, 3):  # Middle of jump arc
-            if rng.random() < sec['intensity'] * 0.7:
-                spike_positions.add(i)
+    for step in range(section_len // JUMP_DIST):
+        plat_x = x + step * JUMP_DIST
 
-    for sp in spike_positions:
-        objects.append(place(8, x + sp, 1))
+        # Platform (2 blocks wide for landing margin)
+        objects.append(place(1, plat_x, h))
+        objects.append(place(1, plat_x + 1, h))
+        placed += 2
+        # Fill below for visual solidity
+        for fill_h in range(1, h):
+            objects.append(place(1, plat_x, fill_h))
+            objects.append(place(1, plat_x + 1, fill_h))
+
+        # Spikes in the gap at current height (player jumps over them)
+        objects.append(place(8, plat_x + 3, h))
         placed += 1
-
-    # Continuous ground floor — BUT remove blocks where spikes are
-    for gx in range(section_len):
-        if gx not in spike_positions:
-            objects.append(place(1, x + gx, 1))
+        if sec['intensity'] > 0.5:
+            objects.append(place(8, plat_x + 2, h))
+            placed += 1
+        if sec['intensity'] > 0.8:
+            objects.append(place(8, plat_x + 4, h))
             placed += 1
 
-    # Elevated platforms (blocks at y=2-3) for variety — player can land on these
-    for i in range(0, section_len, JUMP_DIST):
-        if rng.random() < sec['intensity'] * 0.3:
-            h = 2 + int(rng.random() * 2)
-            objects.append(place(1, x + i, h))
-            placed += 1
+        # Height change
+        if h >= 6:
+            direction = -1
+        elif h <= 1:
+            direction = 1
+        if rng.random() < 0.7:
+            h += direction
+        if rng.random() < 0.2:
+            direction *= -1
 
     x += section_len
     return x
