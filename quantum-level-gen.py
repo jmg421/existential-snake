@@ -439,6 +439,15 @@ def build_gmd(framework):
     for h in range(1, 8):
         objects.append(place(1, x, h))
 
+    # Safety: remove any spike that shares X with a block (landing death trap)
+    from gmdkit.mappings import obj_prop as op
+    block_xs = set(int(o[op.X]) for o in objects if o[op.ID] == 1)
+    before = len(objects)
+    objects = [o for o in objects if o[op.ID] != 8 or int(o[op.X]) not in block_xs]
+    removed = before - len(objects)
+    if removed:
+        print(f"  Removed {removed} spikes on landing zones")
+
     return objects
 
 
@@ -490,17 +499,12 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
             objects.append(place(1, plat_x, fh))
             objects.append(place(1, plat_x + 1, fh))
 
-        # Spikes in the gap: at current platform height (player jumps from here)
-        # Player is at plat_h, jumps +2 above it, so spike at plat_h is trivial
-        # Spike at plat_h+1 is harder (player must be near peak to clear)
-        spike_h = plat_h
-        if sec['intensity'] > 0.6 and rng.random() < 0.4:
-            spike_h = plat_h + 1  # Harder: spike 1 above platform (still < +2)
-        
-        objects.append(place(8, plat_x + 3, spike_h))
+        # Spikes in the gap at current platform height
+        # Player jumps from plat_h, peaks at plat_h+2, spike at plat_h is trivially cleared
+        objects.append(place(8, plat_x + 3, plat_h))
         placed += 1
         if sec['intensity'] > 0.4:
-            objects.append(place(8, plat_x + 2, spike_h))
+            objects.append(place(8, plat_x + 2, plat_h))
             placed += 1
 
     x += section_len
