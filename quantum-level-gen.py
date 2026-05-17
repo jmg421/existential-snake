@@ -371,12 +371,8 @@ def build_gmd(framework):
         return o
 
     objects = []
-    x = 5  # Starting position
+    x = 10  # Start objects ahead of player spawn
     rng = np.random.default_rng(77)
-
-    # Ground floor runway (player runs here before first jump)
-    for gx in range(0, 5):
-        objects.append(place(1, gx, 1))
 
     # Initial speed
     objects.append(place(SPEED_IDS['2x'], 3, 7))
