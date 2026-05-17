@@ -321,6 +321,11 @@
       "type": "portal_cube"
     },
     {
+      "beat": 52.5,
+      "type": "portal_speed",
+      "speed": 4
+    },
+    {
       "beat": 53.5,
       "type": "spike"
     },
@@ -588,6 +593,11 @@
       "type": "portal_cube"
     },
     {
+      "beat": 100.5,
+      "type": "portal_speed",
+      "speed": 4
+    },
+    {
       "beat": 101.5,
       "type": "block",
       "h": 5
@@ -665,6 +675,11 @@
       "h": 2
     },
     {
+      "beat": 110.338,
+      "type": "portal_speed",
+      "speed": 4
+    },
+    {
       "beat": 111.338,
       "type": "spike",
       "y": 2
@@ -676,6 +691,11 @@
     {
       "beat": 112.839,
       "type": "spike"
+    },
+    {
+      "beat": 113.34,
+      "type": "portal_speed",
+      "speed": 4
     },
     {
       "beat": 114.34,
