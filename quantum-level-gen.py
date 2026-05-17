@@ -439,21 +439,17 @@ def build_gmd(framework):
     for h in range(1, 8):
         objects.append(place(1, x, h))
 
-    # POST-BUILD: simulate hold-spacebar and remove any spike that kills
-    objects = _validate_and_fix(objects)
-
     return objects
 
 
-def _validate_and_fix(objects):
-    """Simulate hold-spacebar, remove any spike that causes death."""
+def _simulate_trajectory(blocks, portals, start_x, end_x):
+    """Simulate hold-spacebar and return player Y at every X position.
+    
+    Returns dict: {gd_x_int: player_y} for every frame position.
+    Builders use this to know exactly where the player is before placing spikes.
+    """
     from gmdkit.mappings import obj_prop
     BLOCK=30; GROUND=15; FPS=60; G=0.958*BLOCK; JV=11.18*BLOCK; SPD=387.42
-
-    portals = sorted([(o[obj_prop.X], o[obj_prop.ID]) for o in objects if o[obj_prop.ID] in (12,13)])
-    blocks = sorted([(o[obj_prop.X], o[obj_prop.Y]) for o in objects if o[obj_prop.ID] == 1])
-    spike_objs = [o for o in objects if o[obj_prop.ID] in (8, 39)]
-    max_x = max(o[obj_prop.X] for o in objects) + 100
 
     def get_mode(x):
         m='cube'
@@ -462,85 +458,100 @@ def _validate_and_fix(objects):
             m='ship' if pid==12 else 'cube'
         return m
 
-    # Find all spike X positions that kill
-    deadly_xs = set()
+    trajectory = {}  # gd_x -> player_y
     px=0.0; py=float(GROUND+BLOCK); vy=0.0; gr=True
-    for _ in range(300000):
+    
+    while px < end_x + 200:
         if get_mode(px)=='cube':
             if gr: vy=JV; gr=False
             vy-=G; py+=vy/FPS
             if py<=GROUND+BLOCK: py=GROUND+BLOCK; vy=0; gr=True
             if not gr and vy<0:
                 for bx,by in blocks:
-                    if abs(px-bx)<BLOCK*0.5 and py<=by+BLOCK+3 and py>=by+BLOCK-15:
-                        py=by+BLOCK; vy=0; gr=True; break
-            for so in spike_objs:
-                sx,sy = so[obj_prop.X], so[obj_prop.Y]
-                if abs(px-sx)<BLOCK*0.4 and get_mode(sx)=='cube':
-                    if py-BLOCK*0.8<sy+BLOCK*0.7 and py>sy+BLOCK*0.2:
-                        deadly_xs.add(int(sx))
+                    if abs(px-bx)<BLOCK*0.45:
+                        btop = by+BLOCK
+                        if py <= btop+3 and py >= btop-12:
+                            py=btop; vy=0; gr=True; break
         else:
             py=GROUND+4*BLOCK; gr=False
-        px+=SPD/FPS
-        if px>max_x: break
+        
+        trajectory[int(px)] = py
+        px += SPD/FPS
+    
+    return trajectory
 
-    # Remove deadly spikes
-    safe = [o for o in objects if o[obj_prop.ID] not in (8,39) or int(o[obj_prop.X]) not in deadly_xs]
-    removed = len(objects) - len(safe)
-    if removed:
-        print(f"  Removed {removed} deadly spikes (hold-spacebar validated)")
-    return safe
+
+def _is_spike_safe(trajectory, spike_gd_x, spike_gd_y):
+    """Check if a spike at (gd_x, gd_y) is safe given the player trajectory.
+    Returns True if player is guaranteed to clear it.
+    """
+    BLOCK = 30
+    # Check all frames within spike's X hitbox range
+    for dx in range(-15, 16):  # ±0.5 blocks
+        check_x = spike_gd_x + dx
+        if check_x in trajectory:
+            player_y = trajectory[check_x]
+            spike_top = spike_gd_y + BLOCK * 0.8
+            player_bottom = player_y - BLOCK * 0.9
+            if player_bottom < spike_top:
+                return False
+    return True
 
 
 def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
     """Cube section: rhythmic staircases synced to jump arc.
     
-    At 2x: jump = 5 blocks horizontal, 1 block vertical.
-    Platforms spaced 5 blocks apart, rising/falling by 1 block.
-    Spikes at current height between platforms (player airborne over them).
-    
-    Hold-spacebar: auto-climbs staircases, auto-clears spikes. 100% safe.
-    Looks and feels like real GD — rhythm, near-misses, visual drama.
+    Physics-first approach:
+    1. Place all platforms (no spikes)
+    2. Simulate hold-spacebar trajectory through platforms
+    3. Place spikes ONLY where player is provably airborne
     """
     JUMP_DIST = 5
     section_len = BLOCKS_PER_SECTION
     placed = 0
     h = 1
-    direction = 1  # 1=ascending, -1=descending
+    direction = 1
 
+    # Step 1: Place platforms only
+    platform_objects = []
     for step in range(section_len // JUMP_DIST):
         plat_x = x + step * JUMP_DIST
-
-        # Platform (2 blocks wide for landing margin)
-        objects.append(place(1, plat_x, h))
-        objects.append(place(1, plat_x + 1, h))
-        placed += 2
-        # Fill below for visual solidity
+        platform_objects.append(place(1, plat_x, h))
+        platform_objects.append(place(1, plat_x + 1, h))
         for fill_h in range(1, h):
-            objects.append(place(1, plat_x, fill_h))
-            objects.append(place(1, plat_x + 1, fill_h))
-
-        # Spikes in the gap — ONLY when platform is at ground level (h=1)
-        # Elevated platforms already provide challenge via height changes
-        if h == 1:
-            objects.append(place(8, plat_x + 3, 1))
-            placed += 1
-            if sec['intensity'] > 0.3:
-                objects.append(place(8, plat_x + 2, 1))
-                placed += 1
-            if sec['intensity'] > 0.5:
-                objects.append(place(8, plat_x + 4, 1))
-                placed += 1
-
-        # Height change — more aggressive, reverse often
-        if h >= 6:
-            direction = -1
-        elif h <= 1:
-            direction = 1
-        # Always change height (makes it harder)
+            platform_objects.append(place(1, plat_x, fill_h))
+            platform_objects.append(place(1, plat_x + 1, fill_h))
+        placed += 2
+        if h >= 6: direction = -1
+        elif h <= 1: direction = 1
         h += direction
-        if rng.random() < 0.5:  # 50% chance to reverse
-            direction *= -1
+        if rng.random() < 0.5: direction *= -1
+
+    objects.extend(platform_objects)
+
+    # Step 2: Simulate trajectory through these platforms
+    from gmdkit.mappings import obj_prop
+    blocks_for_sim = [(o[obj_prop.X], o[obj_prop.Y]) for o in platform_objects if o[obj_prop.ID] == 1]
+    # Include blocks already in the level before this section
+    all_blocks = [(o[obj_prop.X], o[obj_prop.Y]) for o in objects if o[obj_prop.ID] == 1]
+    portals = [(o[obj_prop.X], o[obj_prop.ID]) for o in objects if o[obj_prop.ID] in (12, 13)]
+    
+    trajectory = _simulate_trajectory(all_blocks, portals, 0, (x + section_len) * GRID + 100)
+
+    # Step 3: Place spikes only where trajectory proves safety
+    spikes_placed = 0
+    for step in range(section_len // JUMP_DIST):
+        plat_x = x + step * JUMP_DIST
+        # Try spike positions in the gap (offsets 2, 3, 4 from platform)
+        for offset in [3, 2, 4]:
+            spike_grid_x = plat_x + offset
+            spike_gd_x = spike_grid_x * GRID + 15
+            spike_gd_y = (1 - 1) * GRID + GROUND_Y  # Ground level spike
+            if _is_spike_safe(trajectory, spike_gd_x, spike_gd_y):
+                objects.append(place(8, spike_grid_x, 1))
+                spikes_placed += 1
+                if spikes_placed > sec['intensity'] * section_len * 0.3:
+                    break
 
     x += section_len
     return x
