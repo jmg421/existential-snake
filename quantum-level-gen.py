@@ -517,21 +517,21 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
         # Spikes in the gap at current height (player jumps over them)
         objects.append(place(8, plat_x + 3, h))
         placed += 1
-        if sec['intensity'] > 0.5:
+        if sec['intensity'] > 0.3:
             objects.append(place(8, plat_x + 2, h))
             placed += 1
-        if sec['intensity'] > 0.8:
+        if sec['intensity'] > 0.5:
             objects.append(place(8, plat_x + 4, h))
             placed += 1
 
-        # Height change
+        # Height change — more aggressive, reverse often
         if h >= 6:
             direction = -1
         elif h <= 1:
             direction = 1
-        if rng.random() < 0.7:
+        if rng.random() < 0.5:  # 50% chance to change height (was 70%)
             h += direction
-        if rng.random() < 0.2:
+        if rng.random() < 0.4:  # 40% chance to reverse (was 20%)
             direction *= -1
 
     x += section_len
