@@ -551,9 +551,10 @@ def _build_ship_section(objects, place, x, sec, n_obstacles, rng):
     Ship flies — obstacles are blocks to navigate around.
     """
     placed = 0
+    ship_rng = np.random.default_rng(999)  # Fixed seed for consistent ship layout
     while placed < n_obstacles:
         # Floor obstacle (1-2 blocks high)
-        h = 1 + int(rng.random() * 2)
+        h = 1 + int(ship_rng.random() * 2)
         for bh in range(1, h + 1):
             objects.append(place(1, x, bh))
             placed += 1
@@ -562,8 +563,8 @@ def _build_ship_section(objects, place, x, sec, n_obstacles, rng):
         x += 5 + int((1 - sec['intensity']) * 4)
 
         # Ceiling obstacle
-        if rng.random() < sec['intensity'] * 0.5:
-            ch = 8 + int(rng.random() * 2)
+        if ship_rng.random() < sec['intensity'] * 0.5:
+            ch = 8 + int(ship_rng.random() * 2)
             objects.append(place(1, x, ch))
             objects.append(place(1, x, ch + 1))
             placed += 2
