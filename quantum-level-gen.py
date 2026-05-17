@@ -572,12 +572,8 @@ def main():
         level.objects.append(o)
 
     level.to_file(args.output)
-    import shutil, os
-    desktop = os.path.expanduser(f"~/Desktop/{args.output}")
-    shutil.copy(args.output, desktop)
 
     print(f"  Saved: {args.output}")
-    print(f"  Copied to: {desktop}")
     print(f"  Import into GD to play!")
 
     if task_arn:
