@@ -120,7 +120,7 @@ def decode_framework(bitstring):
             {'mode': 'cube', 'intensity': 0.7, 'has_gravity': True, 'has_speed_change': False},
             {'mode': 'cube', 'intensity': 0.8, 'has_gravity': False, 'has_speed_change': True},
             {'mode': 'ship', 'intensity': 0.6, 'has_gravity': False, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.6, 'has_gravity': True, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.75, 'has_gravity': True, 'has_speed_change': False},
             {'mode': 'cube', 'intensity': 1.0, 'has_gravity': False, 'has_speed_change': True},
         ]
         for i, t in enumerate(template):
