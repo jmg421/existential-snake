@@ -6,7 +6,7 @@ import { importGDLevel } from './gd-import.js';
 import { playJump, playDeath, playLand, playOrb, playPad, playCheckpoint, playComplete, playRestart } from './sfx.js';
 import * as P from './particles.js';
 
-const VERSION = '32f8f54';
+const VERSION = 'bc3a554';
 
 let level = null;
 let player = createPlayer();

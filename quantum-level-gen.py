@@ -514,16 +514,17 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
             objects.append(place(1, plat_x, fill_h))
             objects.append(place(1, plat_x + 1, fill_h))
 
-        # Spikes in the gap — place at GROUND level (y=1) always safe
-        # Player is always above ground during a jump regardless of platform height
-        objects.append(place(8, plat_x + 3, 1))
-        placed += 1
-        if sec['intensity'] > 0.3:
-            objects.append(place(8, plat_x + 2, 1))
+        # Spikes in the gap — ONLY when platform is at ground level (h=1)
+        # Elevated platforms already provide challenge via height changes
+        if h == 1:
+            objects.append(place(8, plat_x + 3, 1))
             placed += 1
-        if sec['intensity'] > 0.5:
-            objects.append(place(8, plat_x + 4, 1))
-            placed += 1
+            if sec['intensity'] > 0.3:
+                objects.append(place(8, plat_x + 2, 1))
+                placed += 1
+            if sec['intensity'] > 0.5:
+                objects.append(place(8, plat_x + 4, 1))
+                placed += 1
 
         # Height change — more aggressive, reverse often
         if h >= 6:
