@@ -2,6 +2,16 @@
 
 Source: https://github.com/camila314/gdp/tree/2.2/PlayerObject
 
+## FIRST PRINCIPLE
+
+**No object stack in the player's path should exceed 2 blocks above the player's current ground level.**
+
+- 1 block above ground: trivially jumpable
+- 2 blocks above ground: barely jumpable (peak of jump arc)
+- 3+ blocks above ground: DEATH (player hits the wall)
+
+The player's "current ground level" changes as they land on platforms. A staircase works because each step is +1 from where the player currently stands.
+
 ## Speed Modes (from PlayerObject_updateTimeMod.cpp)
 
 | Speed Portal | m_playerSpeed | m_yStart (jump vel) | m_gravity | m_speedMultiplier |
