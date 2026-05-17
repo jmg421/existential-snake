@@ -68,16 +68,17 @@ SPEEDS = ['1x', '2x', '3x', '4x']
 SPEED_IDS = {'1x': 201, '2x': 202, '3x': 203, '4x': 1334}
 MODE_PORTAL_IDS = {'cube': 13, 'ship': 12, 'ball': 47, 'wave': 660}
 
-# Block patterns (all height 1 — jump only clears 1 block)
+# Block patterns (QPU selects which pattern style each section uses)
+# These now control the MIX of staircase/flat/gap patterns via intensity
 PATTERNS = [
-    [1],                # Single block
-    [1, 1],             # Double platform
-    [1, 1, 1],          # Triple platform
-    [1, 1, 1, 1],       # Long platform
-    [1],                # Single
-    [1, 1],             # Double
-    [1, 1, 1],          # Triple
-    [1, 1, 1, 1, 1],   # Extended platform
+    'staircase_heavy',   # Mostly ascending/descending
+    'flat_heavy',        # Mostly flat runs
+    'gap_heavy',         # Mostly gap jumps
+    'mixed',             # Even mix
+    'staircase_heavy',
+    'flat_heavy',
+    'gap_heavy',
+    'mixed',
 ]
 
 
@@ -413,94 +414,97 @@ def build_gmd(framework):
     for h in range(1, 8):
         objects.append(place(1, x, h))
 
-    # POST-BUILD VALIDATION: Remove spikes that are at landing positions
-    objects = _remove_impossible_spikes(objects)
-
     return objects
 
 
-def _remove_impossible_spikes(objects):
-    """Simulate hold-spacebar and remove any spike the player would hit."""
-    from gmdkit.mappings import obj_prop
-
-    BLOCK = 30; GROUND = 15; GRAVITY = 0.958*60*BLOCK; JUMP_VY = 11.18*BLOCK; SPEED = 251.16*2
-    SAFE_MARGIN = 80  # units from landing point (player hitbox + movement)
-
-    # Find portals and spikes
-    portals = sorted([(o[obj_prop.X], o[obj_prop.ID]) for o in objects if o[obj_prop.ID] in (12, 13)])
-    max_x = max(o[obj_prop.X] for o in objects) + 200
-
-    def get_mode(x):
-        mode = 'cube'
-        for px, pid in portals:
-            if px > x: break
-            mode = 'ship' if pid == 12 else 'cube'
-        return mode
-
-    # Simulate to find all landing positions
-    sim_y = GROUND + BLOCK; sim_vy = 0; grounded = True; sim_x = 0
-    landings = []
-    while sim_x < max_x:
-        if get_mode(sim_x) == 'cube':
-            if grounded:
-                sim_vy = JUMP_VY; grounded = False
-                landings.append(sim_x)
-            sim_vy -= GRAVITY/60; sim_y += sim_vy/60
-            if sim_y <= GROUND + BLOCK:
-                sim_y = GROUND + BLOCK; sim_vy = 0; grounded = True
-        else:
-            sim_y = GROUND + 4*BLOCK; grounded = False
-        sim_x += SPEED/60
-
-    # Remove spikes too close to any landing
-    safe_objects = []
-    removed = 0
-    for o in objects:
-        if o[obj_prop.ID] in (8, 39):
-            sx = o[obj_prop.X]
-            if get_mode(sx) == 'cube':
-                if any(abs(sx - lx) < SAFE_MARGIN for lx in landings):
-                    removed += 1
-                    continue
-        safe_objects.append(o)
-
-    if removed:
-        print(f"  Removed {removed} impossible spikes (landing zone conflicts)")
-
-    return safe_objects
-
-
 def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
-    """Cube section. Jump = 1.1 blocks high. Player can ONLY clear 1-block obstacles.
+    """Cube section using REAL GD patterns from corpus analysis.
     
-    Safe patterns:
-      - Single ground spike (y=1): jumpable
-      - 1-high block: player lands on top
-      - 1-high block + spike at ground AFTER it: player jumps from block over spike
+    Key insight from The Nightmare (corpus):
+      Spikes are at the SAME HEIGHT as the block the player is LEAVING.
+      They punish NOT jumping, not jumping OVER.
     
-    NEVER: 2+ block stacks, spikes on top of blocks (too high to jump over)
+    Patterns:
+      1. Ascending staircase: block(h) → spike(h)+block(h+1) → spike(h+1)+block(h+2)
+      2. Descending staircase: block(h) → spike(h)+block(h-1) → spike(h-1)+block(h-2)
+      3. Flat run: block(h) block(h) block(h) spike(h) — spike at end punishes stopping
+      4. Gap jump: block(h) ... gap ... block(h) — player jumps across
+    
+    Grid: each block/spike is 1 unit apart (30 GD units).
     """
     placed = 0
+    h = 1  # Current height (grid units, 1 = ground)
+    
     while placed < n_obstacles:
-        # Ground-level block (player lands on it)
-        objects.append(place(1, x, 1))
-        placed += 1
-        x += 2
-
-        # Gap then ground spike(s)
-        x += 1
-        n_spikes = 1 + int(sec['intensity'])
-        n_spikes = min(n_spikes, 2)
-        for s in range(n_spikes):
-            objects.append(place(8, x, 1))  # Ground spike only
+        pattern_choice = rng.random()
+        
+        if pattern_choice < 0.3 and h < 7:
+            # Ascending staircase (3-5 steps)
+            steps = 3 + int(sec['intensity'] * 2)
+            for s in range(steps):
+                if h + s > 8:
+                    break
+                objects.append(place(1, x, h + s))          # Block at current height
+                objects.append(place(8, x + 1, h + s))      # Spike at same height, 1 right
+                objects.append(place(1, x + 1, h + s + 1))  # Block one higher, same X as spike
+                placed += 3
+                x += 1
+            h = min(h + steps, 8)
+            x += 2  # Gap after staircase
+            
+        elif pattern_choice < 0.6 and h > 2:
+            # Descending staircase
+            steps = 2 + int(sec['intensity'] * 2)
+            for s in range(steps):
+                if h - s < 1:
+                    break
+                objects.append(place(1, x, h - s))          # Block
+                objects.append(place(8, x + 1, h - s))      # Spike same height
+                objects.append(place(1, x + 1, h - s - 1))  # Block one lower
+                placed += 3
+                x += 1
+            h = max(h - steps, 1)
+            x += 2
+            
+        elif pattern_choice < 0.8:
+            # Flat platform run with spike at end
+            run_len = 2 + int(rng.random() * 3)
+            for i in range(run_len):
+                objects.append(place(1, x, h))
+                placed += 1
+                x += 1
+            # Spike at end (same height) — punishes not jumping off
+            objects.append(place(8, x, h))
             placed += 1
+            x += 2  # Gap to next section
+            
+        else:
+            # Gap jump: platform → gap → platform (same or different height)
+            # Starting platform
+            for i in range(2):
+                objects.append(place(1, x, h))
+                placed += 1
+                x += 1
+            # Gap (2-4 blocks based on intensity)
+            gap = 2 + int(sec['intensity'] * 2)
+            # Spike in the gap at ground level (fall = death)
+            objects.append(place(8, x + gap // 2, 1))
+            placed += 1
+            x += gap
+            # Landing platform (vary height slightly)
+            new_h = h + rng.choice([-1, 0, 0, 1])
+            new_h = max(1, min(8, new_h))
+            for i in range(2):
+                objects.append(place(1, x, new_h))
+                placed += 1
+                x += 1
+            h = new_h
             x += 1
-        x += 3  # Landing room
 
-        # Pad occasionally
-        if placed > 0 and placed % 20 == 0 and rng.random() < 0.4:
+        # Pad/orb occasionally
+        if placed > 0 and placed % 25 == 0 and rng.random() < 0.4:
             pad_type = rng.choice([35, 67, 140], p=[0.4, 0.35, 0.25])
-            objects.append(place(pad_type, x, 1))
+            objects.append(place(pad_type, x, h))
             x += 2
 
     return x
