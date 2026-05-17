@@ -114,14 +114,14 @@ def decode_framework(bitstring):
     modes = [s['mode'] for s in sections]
     if modes.count(modes[0]) >= 6:  # Too uniform — apply a good template
         template = [
-            {'mode': 'cube', 'intensity': 0.7, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'cube', 'intensity': 0.4, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'cube', 'intensity': 0.6, 'has_gravity': False, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.7, 'has_gravity': False, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.75, 'has_gravity': False, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.8, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'ship', 'intensity': 0.6, 'has_gravity': False, 'has_speed_change': False},
             {'mode': 'cube', 'intensity': 0.85, 'has_gravity': False, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.8, 'has_gravity': False, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.9, 'has_gravity': True, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.95, 'has_gravity': False, 'has_speed_change': True},
-            {'mode': 'ship', 'intensity': 0.7, 'has_gravity': False, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.85, 'has_gravity': True, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 1.0, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'cube', 'intensity': 0.9, 'has_gravity': False, 'has_speed_change': True},
         ]
         for i, t in enumerate(template):
             sections[i].update(t)
