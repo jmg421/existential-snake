@@ -531,9 +531,9 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
             direction = -1
         elif h <= 1:
             direction = 1
-        if rng.random() < 0.5:  # 50% chance to change height (was 70%)
-            h += direction
-        if rng.random() < 0.4:  # 40% chance to reverse (was 20%)
+        # Always change height (makes it harder)
+        h += direction
+        if rng.random() < 0.5:  # 50% chance to reverse
             direction *= -1
 
     x += section_len
