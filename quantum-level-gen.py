@@ -507,7 +507,7 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
             if next_h <= plat_h:
                 objects.append(place(8, plat_x + 3, plat_h))
                 placed += 1
-                if sec['intensity'] > 0.4:
+                if sec['intensity'] > 0.35:
                     objects.append(place(8, plat_x + 2, plat_h))
                     placed += 1
 
