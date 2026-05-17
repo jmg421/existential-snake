@@ -429,6 +429,12 @@ def build_gmd(framework):
 
         x = section_start + BLOCKS_PER_SECTION
 
+    # 3 User coins at challenging spots (high up, require precise jumps)
+    level_len = x - 10
+    objects.append(place(1329, 10 + int(level_len * 0.25), 5))  # Coin 1: 25%, high
+    objects.append(place(1329, 10 + int(level_len * 0.55), 6))  # Coin 2: 55%, higher
+    objects.append(place(1329, 10 + int(level_len * 0.82), 4))  # Coin 3: 82%, before finale
+
     # End wall
     for h in range(1, 8):
         objects.append(place(1, x, h))
