@@ -109,6 +109,23 @@ def decode_framework(bitstring):
         start = s * QUBITS_PER_SECTION
         bits = [int(bitstring[start + i]) for i in range(QUBITS_PER_SECTION)]
         sections.append(decode_section(bits))
+
+    # Ensure variety: if most sections are identical (local sim), apply a template
+    modes = [s['mode'] for s in sections]
+    if modes.count(modes[0]) >= 6:  # Too uniform — apply a good template
+        template = [
+            {'mode': 'cube', 'intensity': 0.4, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'cube', 'intensity': 0.6, 'has_gravity': False, 'has_speed_change': False},
+            {'mode': 'ship', 'intensity': 0.5, 'has_gravity': False, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.7, 'has_gravity': True, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.8, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'ship', 'intensity': 0.6, 'has_gravity': False, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.9, 'has_gravity': True, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 1.0, 'has_gravity': False, 'has_speed_change': True},
+        ]
+        for i, t in enumerate(template):
+            sections[i].update(t)
+
     return sections
 
 
@@ -439,59 +456,60 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
         pattern_choice = rng.random()
         
         if pattern_choice < 0.3 and h < 7:
-            # Ascending staircase (3-5 steps)
-            steps = 3 + int(sec['intensity'] * 2)
+            # Ascending staircase (3-6 steps based on intensity)
+            steps = 3 + int(sec['intensity'] * 3)
             for s in range(steps):
                 if h + s > 8:
                     break
-                objects.append(place(1, x, h + s))          # Block at current height
-                objects.append(place(8, x + 1, h + s))      # Spike at same height, 1 right
-                objects.append(place(1, x + 1, h + s + 1))  # Block one higher, same X as spike
+                objects.append(place(1, x, h + s))
+                objects.append(place(8, x + 1, h + s))
+                objects.append(place(1, x + 1, h + s + 1))
                 placed += 3
                 x += 1
             h = min(h + steps, 8)
-            x += 2  # Gap after staircase
+            x += 1
             
         elif pattern_choice < 0.6 and h > 2:
             # Descending staircase
-            steps = 2 + int(sec['intensity'] * 2)
+            steps = 2 + int(sec['intensity'] * 3)
             for s in range(steps):
                 if h - s < 1:
                     break
-                objects.append(place(1, x, h - s))          # Block
-                objects.append(place(8, x + 1, h - s))      # Spike same height
-                objects.append(place(1, x + 1, h - s - 1))  # Block one lower
+                objects.append(place(1, x, h - s))
+                objects.append(place(8, x + 1, h - s))
+                objects.append(place(1, x + 1, h - s - 1))
                 placed += 3
                 x += 1
             h = max(h - steps, 1)
-            x += 2
+            x += 1
             
         elif pattern_choice < 0.8:
-            # Flat platform run with spike at end
-            run_len = 2 + int(rng.random() * 3)
+            # Flat platform run with spikes at end (more spikes at higher intensity)
+            run_len = 2 + int(rng.random() * 2)
             for i in range(run_len):
                 objects.append(place(1, x, h))
                 placed += 1
                 x += 1
-            # Spike at end (same height) — punishes not jumping off
-            objects.append(place(8, x, h))
-            placed += 1
-            x += 2  # Gap to next section
+            # Multiple spikes at end
+            n_end_spikes = 1 + int(sec['intensity'] * 2)
+            for s in range(n_end_spikes):
+                objects.append(place(8, x, h))
+                placed += 1
+                x += 1
+            x += 1
             
         else:
-            # Gap jump: platform → gap → platform (same or different height)
-            # Starting platform
+            # Gap jump with ground spikes (wider gap at higher intensity)
             for i in range(2):
                 objects.append(place(1, x, h))
                 placed += 1
                 x += 1
-            # Gap (2-4 blocks based on intensity)
-            gap = 2 + int(sec['intensity'] * 2)
-            # Spike in the gap at ground level (fall = death)
-            objects.append(place(8, x + gap // 2, 1))
-            placed += 1
+            gap = 2 + int(sec['intensity'] * 3)
+            # Fill gap with ground spikes
+            for g in range(gap):
+                objects.append(place(8, x + g, 1))
+                placed += 1
             x += gap
-            # Landing platform (vary height slightly)
             new_h = h + rng.choice([-1, 0, 0, 1])
             new_h = max(1, min(8, new_h))
             for i in range(2):
@@ -499,7 +517,6 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
                 placed += 1
                 x += 1
             h = new_h
-            x += 1
 
         # Pad/orb occasionally
         if placed > 0 and placed % 25 == 0 and rng.random() < 0.4:
