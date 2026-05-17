@@ -605,20 +605,43 @@ def _build_wave_section(objects, place, x, sec, n_obstacles, rng):
 
 
 def _add_decorations(objects, place, start_x, end_x, rng):
-    """Add decorations matching corpus 92% ratio. NO gameplay object IDs."""
+    """Add decorations using corpus-popular objects (ID 211, 503, 1011, 467, 94).
+    Layered: far background → mid background → near foreground.
+    Density matches corpus average of 92% deco ratio.
+    """
     length = end_x - start_x
-    # Background glow pillars
-    for dx in range(0, length, 12):
-        objects.append(place(503, start_x + dx, 5, scale=2.0, z_order=-5))
-    # Glow circles
+    if length <= 0:
+        return
+
+    # Layer 1: Background glow pillars (ID 503) — tall, far back
+    for dx in range(0, length, 8):
+        h = 4 + rng.random() * 6
+        objects.append(place(503, start_x + dx, h, scale=1.5 + rng.random(), z_order=-5))
+
+    # Layer 2: Glow half-slabs (ID 211) — the #1 deco object in GD
+    for dx in range(0, length, 4):
+        h = 1 + rng.random() * 3
+        objects.append(place(211, start_x + dx, h, scale=0.8 + rng.random() * 0.5, z_order=-3))
+
+    # Layer 3: Background squares (ID 467) — floating, rotated
+    for dx in range(5, length, 12):
+        h = 6 + rng.random() * 4
+        objects.append(place(467, start_x + dx, h, scale=0.5 + rng.random() * 0.8,
+                             rotation=rng.random() * 360, z_order=-4))
+
+    # Layer 4: Glow circles (ID 1011) — atmosphere, scattered high
     for dx in range(3, length, 10):
-        objects.append(place(726, start_x + dx, 7 + rng.random() * 3, scale=1.5, z_order=-3))
-    # Ground detail (dots, not spikes)
-    for dx in range(0, length, 6):
-        objects.append(place(1888, start_x + dx, 0, scale=0.4, z_order=-1))
-    # Stars
-    for dx in range(7, length, 14):
-        objects.append(place(1329, start_x + dx, 10 + rng.random() * 2, scale=0.5, z_order=-4))
+        h = 7 + rng.random() * 4
+        objects.append(place(1011, start_x + dx, h, scale=1.0 + rng.random(), z_order=-3))
+
+    # Layer 5: Ground detail blocks (ID 94) — along the floor
+    for dx in range(0, length, 3):
+        objects.append(place(94, start_x + dx, 0, scale=0.6, z_order=-1))
+
+    # Layer 6: Pulse dots (ID 1888) — tiny accents near gameplay
+    for dx in range(2, length, 6):
+        h = 2 + rng.random() * 2
+        objects.append(place(1888, start_x + dx, h, scale=0.3 + rng.random() * 0.3, z_order=-2))
 
 
 # ============================================================
