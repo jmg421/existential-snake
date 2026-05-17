@@ -468,8 +468,8 @@ def _validate_and_fix(objects):
                         py=by+BLOCK; vy=0; gr=True; break
             for so in spike_objs:
                 sx,sy = so[obj_prop.X], so[obj_prop.Y]
-                if abs(px-sx)<BLOCK*0.7 and get_mode(sx)=='cube':
-                    if py-BLOCK*0.9<sy+BLOCK*0.9 and py>sy:
+                if abs(px-sx)<BLOCK*0.4 and get_mode(sx)=='cube':
+                    if py-BLOCK*0.8<sy+BLOCK*0.7 and py>sy+BLOCK*0.2:
                         deadly_xs.add(int(sx))
         else:
             py=GROUND+4*BLOCK; gr=False
