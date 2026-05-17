@@ -499,13 +499,17 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
             objects.append(place(1, plat_x, fh))
             objects.append(place(1, plat_x + 1, fh))
 
-        # Spikes in the gap at current platform height
-        # Player jumps from plat_h, peaks at plat_h+2, spike at plat_h is trivially cleared
-        objects.append(place(8, plat_x + 3, plat_h))
-        placed += 1
-        if sec['intensity'] > 0.4:
-            objects.append(place(8, plat_x + 2, plat_h))
-            placed += 1
+        # Spikes in the gap AFTER this platform
+        # ONLY safe when next platform is SAME height or LOWER
+        # If next is higher: player needs full arc to reach it, spikes would block the approach
+        if step < len(platforms) - 1:
+            next_h = platforms[step + 1]
+            if next_h <= plat_h:
+                objects.append(place(8, plat_x + 3, plat_h))
+                placed += 1
+                if sec['intensity'] > 0.4:
+                    objects.append(place(8, plat_x + 2, plat_h))
+                    placed += 1
 
     x += section_len
     return x
