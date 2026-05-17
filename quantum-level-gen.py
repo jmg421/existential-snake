@@ -68,16 +68,16 @@ SPEEDS = ['1x', '2x', '3x', '4x']
 SPEED_IDS = {'1x': 201, '2x': 202, '3x': 203, '4x': 1334}
 MODE_PORTAL_IDS = {'cube': 13, 'ship': 12, 'ball': 47, 'wave': 660}
 
-# Block patterns observed in corpus (sequences of heights)
+# Block patterns (all height 1 — jump only clears 1 block)
 PATTERNS = [
-    [1, 1, 1],                    # Flat ground run
-    [1, 2, 3],                    # Staircase up
-    [3, 2, 1],                    # Staircase down
-    [1, 1, 2, 2],                 # Step up
-    [1, 3, 1],                    # Spike platform
-    [2, 2, 2],                    # Elevated run
-    [1, 2, 3, 2, 1],             # Pyramid
-    [1, 1, 1, 2, 3, 3],          # Ramp
+    [1],                # Single block
+    [1, 1],             # Double platform
+    [1, 1, 1],          # Triple platform
+    [1, 1, 1, 1],       # Long platform
+    [1],                # Single
+    [1, 1],             # Double
+    [1, 1, 1],          # Triple
+    [1, 1, 1, 1, 1],   # Extended platform
 ]
 
 
@@ -471,73 +471,31 @@ def _remove_impossible_spikes(objects):
 
 
 def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
-    """Cube section: simulate jump physics to guarantee playability.
+    """Cube section. Jump = 1.1 blocks high. Player can ONLY clear 1-block obstacles.
     
-    Pre-compute landing positions, then place spikes only where
-    the player is guaranteed to be airborne.
+    Safe patterns:
+      - Single ground spike (y=1): jumpable
+      - 1-high block: player lands on top
+      - 1-high block + spike at ground AFTER it: player jumps from block over spike
+    
+    NEVER: 2+ block stacks, spikes on top of blocks (too high to jump over)
     """
-    BLOCK = 30
-    GROUND_Y_SIM = 15
-    GRAVITY = 0.958 * 60 * BLOCK
-    JUMP_VY = 11.18 * BLOCK
-    SPEED = 251.16 * 2
-
-    section_length = BLOCKS_PER_SECTION * BLOCK  # Total X units for this section
-    end_x = x * BLOCK + section_length
-
-    # Simulate hold-spacebar to find landing X positions
-    sim_y = GROUND_Y_SIM + BLOCK
-    sim_vy = 0
-    grounded = True
-    sim_x = x * BLOCK  # Convert to GD units
-    landing_xs = []
-
-    while sim_x < end_x:
-        if grounded:
-            sim_vy = JUMP_VY
-            grounded = False
-            landing_xs.append(sim_x)  # Player is on ground here
-        sim_vy -= GRAVITY / 60
-        sim_y += sim_vy / 60
-        if sim_y <= GROUND_Y_SIM + BLOCK:
-            sim_y = GROUND_Y_SIM + BLOCK
-            sim_vy = 0
-            grounded = True
-        sim_x += SPEED / 60
-
-    # Convert landing positions to block coordinates
-    # Spikes are SAFE if they're > 1.5 blocks from any landing position
-    safe_margin = 1.5 * BLOCK  # 45 units from any landing
-
-    def is_safe_for_spike(block_x):
-        gd_x = block_x * BLOCK + 15  # Convert to GD coords (place() adds 15)
-        return all(abs(gd_x - lx) > safe_margin for lx in landing_xs)
-
-    # Build the section
-    pattern = sec['pattern']
     placed = 0
-    while placed < n_obstacles and x * BLOCK < end_x:
-        # Platform (always safe — player lands on blocks)
-        for h in pattern:
-            objects.append(place(1, x, h))
+    while placed < n_obstacles:
+        # Ground-level block (player lands on it)
+        objects.append(place(1, x, 1))
+        placed += 1
+        x += 2
+
+        # Gap then ground spike(s)
+        x += 1
+        n_spikes = 1 + int(sec['intensity'])
+        n_spikes = min(n_spikes, 2)
+        for s in range(n_spikes):
+            objects.append(place(8, x, 1))  # Ground spike only
             placed += 1
             x += 1
-
-        x += 1  # Small gap
-
-        # Try to place spikes where player is airborne
-        n_spikes = 1 + int(sec['intensity'])
-        spikes_placed = 0
-        for attempt in range(5):
-            test_x = x + attempt
-            if is_safe_for_spike(test_x):
-                objects.append(place(8, test_x, 1))
-                placed += 1
-                spikes_placed += 1
-                if spikes_placed >= n_spikes:
-                    break
-
-        x += 5  # Move past spike zone
+        x += 3  # Landing room
 
         # Pad occasionally
         if placed > 0 and placed % 20 == 0 and rng.random() < 0.4:
@@ -549,25 +507,23 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
 
 
 def _build_ship_section(objects, place, x, sec, n_obstacles, rng):
-    """Ship section: floor/ceiling obstacles with navigable gaps.
-    Ship needs vertical space to maneuver. Min 4 blocks between floor and ceiling.
-    Obstacles need horizontal gaps of at least 5 blocks at 2x speed.
+    """Ship section: floor/ceiling blocks only (no spikes on blocks).
+    Ship flies — obstacles are blocks to navigate around.
     """
     placed = 0
     while placed < n_obstacles:
-        # Floor obstacle (blocks + spike on top)
-        h = 1 + int(rng.random() * 2)  # Max 2 high (leaves room to fly over)
+        # Floor obstacle (1-2 blocks high)
+        h = 1 + int(rng.random() * 2)
         for bh in range(1, h + 1):
             objects.append(place(1, x, bh))
-        objects.append(place(8, x, h + 1))
-        placed += h + 1
+            placed += 1
 
-        # Horizontal gap (5-9 blocks depending on intensity)
+        # Gap (5-9 blocks)
         x += 5 + int((1 - sec['intensity']) * 4)
 
-        # Ceiling obstacle (only at higher intensity, high up)
+        # Ceiling obstacle
         if rng.random() < sec['intensity'] * 0.5:
-            ch = 9 + int(rng.random() * 2)  # High ceiling (y=9-10)
+            ch = 8 + int(rng.random() * 2)
             objects.append(place(1, x, ch))
             objects.append(place(1, x, ch + 1))
             placed += 2
