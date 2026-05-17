@@ -421,31 +421,32 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
         # Block pattern from QPU choice
         for h in pattern:
             objects.append(place(1, x, h))
-            # Spike on top (corpus ratio: 1 spike per ~6 blocks)
-            if rng.random() < 0.17:
-                objects.append(place(8, x + 1, h + 1))
             placed += 1
             x += 2
 
-        # Gap with spikes
-        gap = 2 + int(rng.random() * 3)
-        for g in range(gap):
-            if rng.random() < sec['intensity'] * 0.6:
-                objects.append(place(8, x + g, 1))
-                placed += 1
+        # Spike AFTER the block pattern (gap of 1 block so player can jump)
+        x += 2
+        n_spikes = 1 + int(sec['intensity'] * 2)
+        for s in range(n_spikes):
+            objects.append(place(8, x + s * 2, 1))
+            placed += 1
+        x += n_spikes * 2 + 2
+
+        # Extra gap for breathing room
+        gap = 3 + int((1 - sec['intensity']) * 4)
         x += gap
 
         # Pad every ~20 blocks (corpus rate)
-        if placed > 0 and placed % 12 == 0 and rng.random() < 0.4:
+        if placed > 0 and placed % 15 == 0 and rng.random() < 0.4:
             pad_type = rng.choice([35, 67, 140], p=[0.4, 0.35, 0.25])
             objects.append(place(pad_type, x, 1))
-            x += 3
+            x += 4
 
     return x
 
 
 def _build_ship_section(objects, place, x, sec, n_obstacles, rng):
-    """Ship section: floor/ceiling obstacles."""
+    """Ship section: floor/ceiling obstacles with navigable gaps."""
     placed = 0
     while placed < n_obstacles:
         # Floor obstacle
@@ -454,16 +455,18 @@ def _build_ship_section(objects, place, x, sec, n_obstacles, rng):
             objects.append(place(1, x, bh))
         objects.append(place(8, x, h + 1))
         placed += h + 1
-        x += 3 + int((1 - sec['intensity']) * 4)
 
-        # Ceiling obstacle
-        if rng.random() < sec['intensity']:
-            ch = 7 + int(rng.random() * 3)
+        # Gap (must be flyable)
+        x += 4 + int((1 - sec['intensity']) * 5)
+
+        # Ceiling obstacle (only at higher intensity)
+        if rng.random() < sec['intensity'] * 0.6:
+            ch = 8 + int(rng.random() * 2)
             for bh in range(ch, ch + 2):
                 objects.append(place(1, x, bh))
-            objects.append(place(39, x, ch - 1))  # Small spike pointing down
+            objects.append(place(8, x, ch - 1, flip_y=True))
             placed += 3
-            x += 3
+            x += 4
 
     return x
 
@@ -511,7 +514,7 @@ def _build_wave_section(objects, place, x, sec, n_obstacles, rng):
 
 
 def _add_decorations(objects, place, start_x, end_x, rng):
-    """Add decorations matching corpus 92% ratio."""
+    """Add decorations matching corpus 92% ratio. NO gameplay object IDs."""
     length = end_x - start_x
     # Background glow pillars
     for dx in range(0, length, 12):
@@ -519,9 +522,9 @@ def _add_decorations(objects, place, start_x, end_x, rng):
     # Glow circles
     for dx in range(3, length, 10):
         objects.append(place(726, start_x + dx, 7 + rng.random() * 3, scale=1.5, z_order=-3))
-    # Ground detail
+    # Ground detail (dots, not spikes)
     for dx in range(0, length, 6):
-        objects.append(place(39, start_x + dx, 0, scale=0.4, z_order=-1))
+        objects.append(place(1888, start_x + dx, 0, scale=0.4, z_order=-1))
     # Stars
     for dx in range(7, length, 14):
         objects.append(place(1329, start_x + dx, 10 + rng.random() * 2, scale=0.5, z_order=-4))
