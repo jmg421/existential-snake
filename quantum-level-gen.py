@@ -114,13 +114,13 @@ def decode_framework(bitstring):
     modes = [s['mode'] for s in sections]
     if modes.count(modes[0]) >= 6:  # Too uniform — apply a good template
         template = [
-            {'mode': 'cube', 'intensity': 0.5, 'has_gravity': False, 'has_speed_change': True},
-            {'mode': 'cube', 'intensity': 0.7, 'has_gravity': False, 'has_speed_change': False},
-            {'mode': 'ship', 'intensity': 0.6, 'has_gravity': False, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.8, 'has_gravity': True, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.85, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'cube', 'intensity': 0.7, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'cube', 'intensity': 0.85, 'has_gravity': False, 'has_speed_change': False},
             {'mode': 'ship', 'intensity': 0.7, 'has_gravity': False, 'has_speed_change': False},
-            {'mode': 'cube', 'intensity': 0.75, 'has_gravity': True, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.9, 'has_gravity': True, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.95, 'has_gravity': False, 'has_speed_change': True},
+            {'mode': 'ship', 'intensity': 0.8, 'has_gravity': False, 'has_speed_change': False},
+            {'mode': 'cube', 'intensity': 0.85, 'has_gravity': True, 'has_speed_change': False},
             {'mode': 'cube', 'intensity': 1.0, 'has_gravity': False, 'has_speed_change': True},
         ]
         for i, t in enumerate(template):
@@ -368,6 +368,8 @@ def build_gmd(framework):
                 o[obj_prop.Z_ORDER] = v
             elif k == 'flip_y':
                 o[obj_prop.FLIP_Y] = v
+            elif k == 'color':
+                o[obj_prop.COLOR_1] = v
         return o
 
     objects = []
@@ -614,24 +616,24 @@ def _add_decorations(objects, place, start_x, end_x, rng):
 
     # Background glow pillars (ID 503) — high up, far back
     for dx in range(0, length, 8):
-        objects.append(place(503, start_x + dx, 8 + rng.random() * 3, scale=1.5 + rng.random(), z_order=-5))
+        objects.append(place(503, start_x + dx, 8 + rng.random() * 3, scale=1.5 + rng.random(), z_order=-5, color=1))
 
     # Glow half-slabs (ID 211) — high background only
     for dx in range(0, length, 5):
-        objects.append(place(211, start_x + dx, 9 + rng.random() * 3, scale=0.6 + rng.random() * 0.4, z_order=-4))
+        objects.append(place(211, start_x + dx, 9 + rng.random() * 3, scale=0.6 + rng.random() * 0.4, z_order=-4, color=2))
 
     # Background squares (ID 467) — floating high, rotated
     for dx in range(5, length, 14):
         objects.append(place(467, start_x + dx, 10 + rng.random() * 3, scale=0.4 + rng.random() * 0.5,
-                             rotation=rng.random() * 360, z_order=-5))
+                             rotation=rng.random() * 360, z_order=-5, color=3))
 
     # Glow circles (ID 1011) — atmosphere, very high
     for dx in range(3, length, 12):
-        objects.append(place(1011, start_x + dx, 11 + rng.random() * 2, scale=0.8 + rng.random(), z_order=-4))
+        objects.append(place(1011, start_x + dx, 11 + rng.random() * 2, scale=0.8 + rng.random(), z_order=-4, color=1))
 
     # Pulse dots (ID 1888) — tiny, below ground (cosmetic underline)
     for dx in range(2, length, 4):
-        objects.append(place(1888, start_x + dx, 0, scale=0.2 + rng.random() * 0.2, z_order=-1))
+        objects.append(place(1888, start_x + dx, 0, scale=0.2 + rng.random() * 0.2, z_order=-1, color=2))
 
 
 # ============================================================
