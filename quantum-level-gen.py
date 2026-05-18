@@ -476,12 +476,10 @@ def _build_cube_section(objects, place, x, sec, n_obstacles, rng):
     temp_dir = direction
     for step in range(section_len // JUMP_DIST):
         platforms.append(temp_h)
-        # Next height: +1 or -1 (safe), occasionally +2 (hard), never +3
+        # Next height: +1 or -1 (safe), never +2 (frame-perfect = effectively impossible)
         if temp_h >= 5: temp_dir = -1
         elif temp_h <= 1: temp_dir = 1
         change = temp_dir
-        if rng.random() < sec['intensity'] * 0.3:
-            change = temp_dir * 2  # +2 = hard jump (barely clearable)
         temp_h += change
         temp_h = max(1, min(6, temp_h))
         if rng.random() < 0.4: temp_dir *= -1
